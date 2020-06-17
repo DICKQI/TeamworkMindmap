@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">多人运动</string>
+
+    <string name="tab_sub_node">SubNode</string>
+    <string name="tab_node">Node</string>
+    <string name="tab_front_view">FrontView</string>
+    <string name="tab_code_mode">CodeMode</string>
+</resources>

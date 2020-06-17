@@ -1,0 +1,40 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="MyDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowTitleStyle">@null</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="button_green">
+        <item name="android:textColor">#518468</item>
+        <item name="background">@color/white</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="height">30dp</item>
+        <item name="android:textSize">17dp</item>
+    </style>
+
+    <style name="TabTheme">
+        <item name="android:background">@drawable/tab_bg</item>
+        <item name="android:paddingTop">7dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/tab_color</item>
+        <item name="android:drawablePadding">@dimen/padding_super_small</item>
+        <item name="android:textSize">@dimen/text_size_iv_tell</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+</resources>
