@@ -10,10 +10,18 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * 网络请求工具
+ */
 public class HttpUtils {
 
     private static final String TAG = HttpUtils.class.getSimpleName();
 
+    /**
+     * HTTP GET方法
+     * @param urlstr 传入地址
+     * @return 网页结果
+     */
     public static String get(String urlstr) {
 
         try {
@@ -36,7 +44,12 @@ public class HttpUtils {
         return null;
     }
 
-    public static String doDelete(String urlstr, String params) {
+    /**
+     * HTTP del方法
+     * @param urlstr 传入地址
+     * @return 网页结果
+     */
+    public static String doDelete(String urlstr) {
         try {
             URL url = new URL(urlstr);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -44,8 +57,8 @@ public class HttpUtils {
             conn.setRequestMethod("DELETE");
 
             //获得一个输出流，向服务器写入数据
-            OutputStream outputStream = conn.getOutputStream();
-            outputStream.write(params.getBytes());
+//            OutputStream outputStream = conn.getOutputStream();
+//            outputStream.write(params.getBytes());
 
             int response = conn.getResponseCode();
             if (response == HttpURLConnection.HTTP_OK) {
@@ -64,7 +77,12 @@ public class HttpUtils {
     }
 
 
-    public static String post(final String urlstr, String params) {
+    /**
+     * HTTP POST方法
+     * @param urlstr 传入地址
+     * @return 网页结果
+     */
+    public static String post(final String urlstr) {
 
         try {
             URL url = new URL(urlstr);
@@ -76,11 +94,11 @@ public class HttpUtils {
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             //设置请求体的长度
-            conn.setRequestProperty("Content-Length", String.valueOf(params.getBytes().length));
+//            conn.setRequestProperty("Content-Length", String.valueOf(params.getBytes().length));
 
             //获得一个输出流，向服务器写入数据
-            OutputStream outputStream = conn.getOutputStream();
-            outputStream.write(params.getBytes());
+//            OutputStream outputStream = conn.getOutputStream();
+//            outputStream.write(params.getBytes());
 
             int response = conn.getResponseCode();
             if (response == HttpURLConnection.HTTP_OK) {
@@ -98,7 +116,12 @@ public class HttpUtils {
     }
 
 
-    public static String put(final String urlstr, String params) {
+    /**
+     * HTTP PUT方法
+     * @param urlstr 传入地址
+     * @return 网页结果
+     */
+    public static String put(final String urlstr) {
         try {
             URL url = new URL(urlstr);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -106,8 +129,8 @@ public class HttpUtils {
             conn.setRequestMethod("PUT");
 
             //获得一个输出流，向服务器写入数据
-            OutputStream outputStream = conn.getOutputStream();
-            outputStream.write(params.getBytes());
+//            OutputStream outputStream = conn.getOutputStream();
+//            outputStream.write(params.getBytes());
 
             int response = conn.getResponseCode();
             if (response == HttpURLConnection.HTTP_OK) {
@@ -125,6 +148,12 @@ public class HttpUtils {
         return null;
     }
 
+    /**
+     * 返回结果转换为字符串
+     * @param stream 接受流
+     * @return 处理后的字符串
+     * @throws IOException
+     */
     private static String dealResponseResult(InputStream stream) throws IOException {
         StringBuffer buffer = new StringBuffer();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
