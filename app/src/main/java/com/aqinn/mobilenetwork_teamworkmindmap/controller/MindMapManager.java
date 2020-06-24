@@ -90,7 +90,7 @@ public class MindMapManager {
     }
 
 
-    private boolean saveTree(Long id, TreeModel tm) {
+    public boolean saveTree(Long id, TreeModel tm) {
         String path = Environment.getExternalStorageDirectory().getPath() + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
         try {
             File f = new File(path + String.valueOf(id) + ".twmm");

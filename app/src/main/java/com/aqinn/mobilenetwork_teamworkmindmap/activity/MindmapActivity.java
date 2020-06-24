@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentTransaction;
@@ -102,6 +103,12 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     protected void onResume() {
         super.onResume();
         treev_mainTreeView.focusMidLocation();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mmm.saveTree(mmId, treev_mainTreeView.getTreeModel());
     }
 
     private void initTreeModel(){
