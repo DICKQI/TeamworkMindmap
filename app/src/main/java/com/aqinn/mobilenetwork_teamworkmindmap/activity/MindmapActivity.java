@@ -172,6 +172,15 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                     treev_mainTreeView.addSubNode(mnContent);
                     break;
                 case 3:
+                    if ("zzf删除专用代码aqinn删除专用代码biu删除专用代码".equals(mnContent)) {
+                        if (treev_mainTreeView.getTreeModel().getRootNode() == treev_mainTreeView.getCurrentFocusNode()) {
+                            Snackbar.make(treev_mainTreeView, "根节点不能删除", Snackbar.LENGTH_SHORT)
+                                    .setAction("Action", null).show();
+                        } else {
+                            treev_mainTreeView.deleteNode(treev_mainTreeView.getCurrentFocusNode());
+                        }
+                        break;
+                    }
                     treev_mainTreeView.changeNodeValue(treev_mainTreeView.getCurrentFocusNode(), mnContent);
                     break;
             }
@@ -217,15 +226,6 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         cm.setSaturation(0f); // 设置饱和度
         ColorMatrixColorFilter grayColorFilter = new ColorMatrixColorFilter(cm);
 //        iv_app_icon.setColorFilter(grayColorFilter);
-
-        bt_add_node.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                treev_mainTreeView.setX(treev_mainTreeView.getX() + 10);
-                treev_mainTreeView.setY(treev_mainTreeView.getY() + 10);
-                return false;
-            }
-        });
 
         bt_code_mode.setOnLongClickListener(new View.OnLongClickListener() {
             @Override

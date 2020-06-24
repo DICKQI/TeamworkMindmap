@@ -83,8 +83,8 @@ public class IndexFragment extends Fragment{
                         intent.putExtras(bundle);
                         startActivity(intent);
                     }
-                    Snackbar.make(view, "您点击的思维导图的名称是: " + mm.getName(), Snackbar.LENGTH_SHORT)
-                            .setAction("Action", null).show();
+//                    Snackbar.make(view, "您点击的思维导图的名称是: " + mm.getName(), Snackbar.LENGTH_SHORT)
+//                            .setAction("Action", null).show();
                 }
             }
         });

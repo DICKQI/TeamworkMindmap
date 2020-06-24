@@ -59,7 +59,7 @@
                     android:textSize="@dimen/text_size_menu" />
 
                 <Button
-                    android:id="@+id/bt_cancel"
+                    android:id="@+id/bt_delete"
                     android:layout_width="142dp"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/et_main"
@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/et_main"
                     android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/bt_cancel"
+                    android:layout_toRightOf="@+id/bt_delete"
                     android:layout_marginTop="10dp"
                     android:text="确认" />
 

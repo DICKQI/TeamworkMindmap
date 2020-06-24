@@ -35,7 +35,7 @@ public class EditMindnodeDialogFragment extends DialogFragment implements View.O
     private TextView tv_title;
     private ImageView iv_clear;
     private EditText et_main;
-    private Button bt_cancel, bt_confirm;
+    private Button bt_delete, bt_confirm;
 
     // 其它
     private String title;
@@ -85,16 +85,17 @@ public class EditMindnodeDialogFragment extends DialogFragment implements View.O
         tv_title = v.findViewById(R.id.tv_title);
         iv_clear = v.findViewById(R.id.iv_clear);
         et_main = v.findViewById(R.id.et_main);
-        bt_cancel = v.findViewById(R.id.bt_cancel);
+        bt_delete = v.findViewById(R.id.bt_delete);
         bt_confirm = v.findViewById(R.id.bt_confirm);
 
         iv_clear.setOnClickListener(this);
-        bt_cancel.setOnClickListener(this);
+        bt_delete.setOnClickListener(this);
         bt_confirm.setOnClickListener(this);
 
         tv_title.setText(this.title);
         if (this.status == 3) {
             et_main.setText(this.content);
+            bt_delete.setText("删除");
         }
 
     }
@@ -123,7 +124,9 @@ public class EditMindnodeDialogFragment extends DialogFragment implements View.O
 //                        break;
 //                }
                 break;
-            case R.id.bt_cancel:
+            case R.id.bt_delete:
+                if (status == 3)
+                    onEditFragmentListener.editMindnode("zzf删除专用代码aqinn删除专用代码biu删除专用代码");
                 dismiss();
                 break;
         }
