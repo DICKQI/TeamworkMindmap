@@ -1,14 +1,20 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AbsoluteLayout;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -39,9 +45,10 @@ import java.io.IOException;
  * @author Aqinn
  * @date 2020/6/15 2:48 PM
  */
-public class MindmapActivity extends AppCompatActivity implements View.OnClickListener{
+public class MindmapActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
     // 组件
+    private AbsoluteLayout al_treeView;
     private TreeView treev_mainTreeView;
     private Button bt_add_sub;
     private Button bt_add_node;
@@ -55,8 +62,11 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 
     //其它
     private MindMapManager mmm = MindMapManager.getInstance();
+    private float x1, y1, x2 = -1, y2 = -1;
+    private boolean flag = true;
 
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,9 +77,9 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
          */
         new FileUtil().createAppDirectory();
         int checkWriteExternalStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if(checkWriteExternalStoragePermission!= PackageManager.PERMISSION_GRANTED){
+        if (checkWriteExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
             //如果没有权限则获取权限 requestCode在后面回调中会用到
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},3);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 3);
         }
 
         try {
@@ -97,6 +107,9 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                 showEdit("修改节点", treev_mainTreeView.getCurrentFocusNode().value, 3);
             }
         });
+
+        al_treeView.setOnTouchListener(this);
+
     }
 
     @Override
@@ -111,7 +124,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         mmm.saveTree(mmId, treev_mainTreeView.getTreeModel());
     }
 
-    private void initTreeModel(){
+    private void initTreeModel() {
         TreeModel<String> tree = null;
         String path = Environment.getExternalStorageDirectory().getPath() + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
         try {
@@ -144,7 +157,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         treev_mainTreeView.setTreeModel(tree);
     }
 
-    private void showEdit(String title, String content, int status){
+    private void showEdit(String title, String content, int status) {
         final EditMindnodeDialogFragment emdf = new EditMindnodeDialogFragment(title, content, status);
         emdf.setOnEditFragmentListener((String mnContent) -> {
             switch (status) {
@@ -170,7 +183,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.bt_add_node:
                 showEdit("添加同级节点", "", 1);
                 break;
@@ -188,6 +201,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void initAllView() {
+        al_treeView = findViewById(R.id.al_treeView);
         treev_mainTreeView = findViewById(R.id.treev_mainTreeView);
         bt_add_sub = findViewById(R.id.bt_add_sub);
         bt_add_node = findViewById(R.id.bt_add_node);
@@ -203,6 +217,15 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         cm.setSaturation(0f); // 设置饱和度
         ColorMatrixColorFilter grayColorFilter = new ColorMatrixColorFilter(cm);
 //        iv_app_icon.setColorFilter(grayColorFilter);
+
+        bt_add_node.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                treev_mainTreeView.setX(treev_mainTreeView.getX() + 10);
+                treev_mainTreeView.setY(treev_mainTreeView.getY() + 10);
+                return false;
+            }
+        });
 
         bt_code_mode.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -220,8 +243,30 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         });
     }
 
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        switch (event.getAction()) {
 
-//    /**
+            case MotionEvent.ACTION_DOWN:
+                x2 = event.getRawX();
+                y2 = event.getRawY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float xx = event.getRawX() - x2;
+                float yy = event.getRawY() - y2;
+                treev_mainTreeView.setX(treev_mainTreeView.getX() + xx);
+                treev_mainTreeView.setY(treev_mainTreeView.getY() + yy);
+                x2 = event.getRawX();
+                y2 = event.getRawY();
+                break;
+            case MotionEvent.ACTION_UP:
+
+                break;
+        }
+        return true;
+    }
+
+    //    /**
 //     * 更改节点内容
 //     * @param model
 //     * @param value

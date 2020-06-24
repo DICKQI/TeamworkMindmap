@@ -2,7 +2,10 @@ package com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -85,17 +88,38 @@ public class IndexFragment extends Fragment{
                 }
             }
         });
-        gv_main.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//        gv_main.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//            @Override
+//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//                // 长按每一思维导图应该能显示 删除 修改名字
+//                // 第一个思维导图（新建思维导图），不需要有任何操作
+//                return false;
+//            }
+//        });
+        gv_main.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                // 长按每一思维导图应该能显示 删除 修改名字
-                // 第一个思维导图（新建思维导图），不需要有任何操作
-                return false;
+            public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+                AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+                MenuInflater menuInflater = getActivity().getMenuInflater();
+                menuInflater.inflate(R.menu.mindmap_grid_item_menu, menu);
             }
         });
     }
 
-
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.share:
+                Snackbar.make(gv_main, "分享给他人协作", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                break;
+            case R.id.delete:
+                Snackbar.make(gv_main, "删除思维导图确认？", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                break;
+        }
+        return true;
+    }
 
     private List<Mindmap> testData() {
         List<Mindmap> mindmaps = new ArrayList<>();
