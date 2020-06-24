@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.List;
 
@@ -22,6 +23,8 @@ public class MindmapAdapter extends BaseAdapter {
 
     private Context mContext;
     private List<Mindmap> mindmaps;
+    private ImageLoader imageLoader;
+
 
     public MindmapAdapter(Context mContext, List<Mindmap> mindmaps) {
         this.mContext = mContext;
@@ -57,12 +60,17 @@ public class MindmapAdapter extends BaseAdapter {
         }
         vh.tv_name.setText(position != 0 ? mindmaps.get(position).getName() : "新建思维导图");
         vh.iv_img.setImageResource(position == 0 ? R.drawable.add_mindmap : R.drawable.mindmap_item_icon);
+        //imageLoader.showImageByAsyncTask(viewHolder.newsIcon, url);
         return convertView;
     }
 
     class ViewHolder {
         ImageView iv_img;
         TextView tv_name;
+    }
+
+    public List<Mindmap> getMindmaps() {
+        return mindmaps;
     }
 
 }

@@ -1,20 +1,27 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
+import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.DensityUtils;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.NodeView;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.RightTreeLayoutManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.TreeView;
@@ -22,7 +29,10 @@ import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.TreeViewItemClick;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.TreeViewItemLongClick;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.CreateMindmapDialogFragment;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.EditMindnodeDialogFragment;
+import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.io.IOException;
 
 /**
  * @author Aqinn
@@ -40,8 +50,10 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 
     // 基本
     private String name;
-    private String mmId;
-    private String lastEditDate;
+    private Long mmId;
+
+    //其它
+    private MindMapManager mmm = MindMapManager.getInstance();
 
 
     @Override
@@ -49,36 +61,27 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mindmap);
 
+        /**
+         * TODO 获得写文件权限，暂时先写在这里
+         */
+        new FileUtil().createAppDirectory();
+        int checkWriteExternalStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if(checkWriteExternalStoragePermission!= PackageManager.PERMISSION_GRANTED){
+            //如果没有权限则获取权限 requestCode在后面回调中会用到
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},3);
+        }
+
         try {
             Bundle bundle = getIntent().getExtras();
             name = bundle.getString("name");
-            mmId = bundle.getString("mmId");
-            lastEditDate = bundle.getString("lastEditDate");
+            mmId = bundle.getLong("mmId");
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
 
         initAllView();
 
-        final NodeModel<String> teamwork_mindmap = new NodeModel<>("teamwork_mindmap");
-        final NodeModel<String> dk = new NodeModel<>("dk");
-        final NodeModel<String> zzq = new NodeModel<>("zzq");
-        final NodeModel<String> zzf = new NodeModel<>("zzf");
-        final NodeModel<String> gjr = new NodeModel<>("gjr");
-        final NodeModel<String> gjn = new NodeModel<>("gjn");
-
-
-        final TreeModel<String> tree = new TreeModel<>(teamwork_mindmap);
-        tree.addNode(teamwork_mindmap, dk, zzq, gjr);
-        tree.addNode(gjr, gjn);
-        tree.addNode(zzq, zzf);
-
-        int dx = DensityUtils.dp2px(this, 20);
-        int dy = DensityUtils.dp2px(this, 20);
-        int mHeight = DensityUtils.dp2px(this, 720);
-
-        treev_mainTreeView.setTreeLayoutManager(new RightTreeLayoutManager(dx, dy, mHeight));
-        treev_mainTreeView.setTreeModel(tree);
+        initTreeModel();
 
         treev_mainTreeView.setTreeViewItemClick(new TreeViewItemClick() {
             @Override
@@ -93,9 +96,45 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                 showEdit("修改节点", treev_mainTreeView.getCurrentFocusNode().value, 3);
             }
         });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
         treev_mainTreeView.focusMidLocation();
+    }
 
+    private void initTreeModel(){
+        TreeModel<String> tree = null;
+        String path = Environment.getExternalStorageDirectory().getPath() + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
+        try {
+            tree = FileUtil.readTreeObject(path + String.valueOf(mmId) + ".twmm");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+//        if (tree == null) {
+//            final NodeModel<String> teamwork_mindmap = new NodeModel<>("teamwork_mindmap");
+//            final NodeModel<String> dk = new NodeModel<>("dk");
+//            final NodeModel<String> zzq = new NodeModel<>("zzq");
+//            final NodeModel<String> zzf = new NodeModel<>("zzf");
+//            final NodeModel<String> gjr = new NodeModel<>("gjr");
+//            final NodeModel<String> gjn = new NodeModel<>("gjn");
+//
+//
+//            tree = new TreeModel<>(teamwork_mindmap);
+//            tree.addNode(teamwork_mindmap, dk, zzq, gjr);
+//            tree.addNode(gjr, gjn);
+//            tree.addNode(zzq, zzf);
+//        }
+
+        int dx = DensityUtils.dp2px(this, 20);
+        int dy = DensityUtils.dp2px(this, 20);
+        int mHeight = DensityUtils.dp2px(this, 720);
+
+        treev_mainTreeView.setTreeLayoutManager(new RightTreeLayoutManager(dx, dy, mHeight));
+        treev_mainTreeView.setTreeModel(tree);
     }
 
     private void showEdit(String title, String content, int status){
@@ -122,25 +161,13 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         emdf.show(ft, "editMindmapDialogFragment");
     }
 
-//    /**
-//     * 更改节点内容
-//     * @param model
-//     * @param value
-//     */
-//    public void changeNodeValue(NodeModel<String> model, String value) {
-//        NodeView treeNodeView = (NodeView) treev_mainTreeView.findNodeViewFromNodeModel(model);
-//        NodeModel<String> treeNode = treeNodeView.getTreeNode();
-//        treeNode.setValue(value);
-//        treeNodeView.setTreeNode(treeNode);
-//    }
-
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.bt_add_sub:
+            case R.id.bt_add_node:
                 showEdit("添加同级节点", "", 1);
                 break;
-            case R.id.bt_add_node:
+            case R.id.bt_add_sub:
                 showEdit("添加子节点", "", 2);
                 break;
             case R.id.bt_focus_mid:
@@ -174,8 +201,10 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public boolean onLongClick(View v) {
                 // TODO 保存 并 返回主页
+                Mindmap mm = new Mindmap(mmId, name);
+                mm.setTm(treev_mainTreeView.getTreeModel());
                 // 保存
-
+                mmm.saveMindmap(mm);
                 // 返回主页
                 Intent intent = new Intent(MindmapActivity.this, IndexActivity.class);
                 startActivity(intent);
@@ -184,5 +213,17 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         });
     }
 
+
+//    /**
+//     * 更改节点内容
+//     * @param model
+//     * @param value
+//     */
+//    public void changeNodeValue(NodeModel<String> model, String value) {
+//        NodeView treeNodeView = (NodeView) treev_mainTreeView.findNodeViewFromNodeModel(model);
+//        NodeModel<String> treeNode = treeNodeView.getTreeNode();
+//        treeNode.setValue(value);
+//        treeNodeView.setTreeNode(treeNode);
+//    }
 
 }

@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/TeamworkMindmap.iml" filepath="$PROJECT_DIR$/.idea/TeamworkMindmap.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/MobileNetwork_TeamworkMindmap.iml" filepath="$PROJECT_DIR$/.idea/modules/MobileNetwork_TeamworkMindmap.iml" group="MobileNetwork_TeamworkMindmap" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" group="MobileNetwork_TeamworkMindmap/app" />
     </modules>
   </component>
 </project>

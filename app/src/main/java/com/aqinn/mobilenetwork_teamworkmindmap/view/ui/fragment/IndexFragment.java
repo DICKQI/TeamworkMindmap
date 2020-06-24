@@ -15,6 +15,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
 import com.aqinn.mobilenetwork_teamworkmindmap.activity.MindmapActivity;
+import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindmapAdapter;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.MyGridView;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
@@ -33,7 +34,8 @@ public class IndexFragment extends Fragment{
     private GridView gv_main;
 
     // 其它
-    private MindmapAdapter mma;
+    public static MindmapAdapter mma;
+    private MindMapManager mmm = MindMapManager.getInstance();
 
     public static IndexFragment newInstance() {
         IndexFragment fragment = new IndexFragment();
@@ -70,13 +72,11 @@ public class IndexFragment extends Fragment{
                     cmdf.show(ft, "createMindmapDialogFragment");
                 } else {
                     Mindmap mm = mindmaps.get(position);
-                    if (position == 1) {
+                    if (position != 0) { // 改变此条件可以实现测试效果 position == 1
                         Intent intent = new Intent(getActivity(), MindmapActivity.class);
                         Bundle bundle = new Bundle();
-                        bundle.putString("mmId", mm.getMmId());
+                        bundle.putLong("mmId", mm.getMmId());
                         bundle.putString("name", mm.getName());
-                        bundle.putString("date", mm.getDate());
-                        bundle.putString("imgPath", mm.getImgPath());
                         intent.putExtras(bundle);
                         startActivity(intent);
                     }
@@ -99,32 +99,35 @@ public class IndexFragment extends Fragment{
 
     private List<Mindmap> testData() {
         List<Mindmap> mindmaps = new ArrayList<>();
-        Mindmap m0 = new Mindmap("add", "");
-        Mindmap m1 = new Mindmap("1001", "Mindmap One");
-        Mindmap m2 = new Mindmap("1002", "Mindmap Two");
-        Mindmap m3 = new Mindmap("1003", "Mindmap Three");
-        Mindmap m4 = new Mindmap("1004", "Mindmap Four");
-        Mindmap m5 = new Mindmap("1005", "Mindmap Five");
-        Mindmap m6 = new Mindmap("1006", "Mindmap Six");
-        Mindmap m7 = new Mindmap("1007", "Mindmap Seven");
-        Mindmap m8 = new Mindmap("1008", "Mindmap Eight");
-        Mindmap m9 = new Mindmap("1009", "Mindmap Nine");
-        Mindmap m10 = new Mindmap("1010", "Mindmap Ten");
-        Mindmap m11 = new Mindmap("1011", "Mindmap Eleven");
-        Mindmap m12 = new Mindmap("1012", "Mindmap Twelve");
-        mindmaps.add(m0);
-        mindmaps.add(m1);
-        mindmaps.add(m2);
-        mindmaps.add(m3);
-        mindmaps.add(m4);
-        mindmaps.add(m5);
-        mindmaps.add(m6);
-        mindmaps.add(m7);
-        mindmaps.add(m8);
-        mindmaps.add(m9);
-        mindmaps.add(m10);
-        mindmaps.add(m11);
-        mindmaps.add(m12);
+//        Mindmap m0 = new Mindmap("add", "");
+//        Mindmap m1 = new Mindmap("1001", "Mindmap One");
+//        Mindmap m2 = new Mindmap("1002", "Mindmap Two");
+//        Mindmap m3 = new Mindmap("1003", "Mindmap Three");
+//        Mindmap m4 = new Mindmap("1004", "Mindmap Four");
+//        Mindmap m5 = new Mindmap("1005", "Mindmap Five");
+//        Mindmap m6 = new Mindmap("1006", "Mindmap Six");
+//        Mindmap m7 = new Mindmap("1007", "Mindmap Seven");
+//        Mindmap m8 = new Mindmap("1008", "Mindmap Eight");
+//        Mindmap m9 = new Mindmap("1009", "Mindmap Nine");
+//        Mindmap m10 = new Mindmap("1010", "Mindmap Ten");
+//        Mindmap m11 = new Mindmap("1011", "Mindmap Eleven");
+//        Mindmap m12 = new Mindmap("1012", "Mindmap Twelve");
+//        mindmaps.add(m0);
+//        mindmaps.add(m1);
+//        mindmaps.add(m2);
+//        mindmaps.add(m3);
+//        mindmaps.add(m4);
+//        mindmaps.add(m5);
+//        mindmaps.add(m6);
+//        mindmaps.add(m7);
+//        mindmaps.add(m8);
+//        mindmaps.add(m9);
+//        mindmaps.add(m10);
+//        mindmaps.add(m11);
+//        mindmaps.add(m12);
+        mindmaps = mmm.getAllMindmap();
+        Mindmap add = new Mindmap("add");
+        mindmaps.add(0, add);
         return mindmaps;
     }
 
@@ -134,33 +137,3 @@ public class IndexFragment extends Fragment{
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

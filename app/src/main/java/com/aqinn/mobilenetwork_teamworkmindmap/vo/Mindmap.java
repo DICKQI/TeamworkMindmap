@@ -1,39 +1,51 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.vo;
 
+import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
+
 /**
  * @author Aqinn
  * @date 2020/6/14 11:57 PM
  */
 public class Mindmap {
 
-    private String mmId;
+    private Long mmId;
 
     private String name;
 
-    private String date;
+    private Long shareId;
 
-    private String imgPath;
+    private Integer shareOn;
 
-    public Mindmap(String mmId, String name, String date, String imgPath) {
-        this.mmId = mmId;
-        this.name = name;
-        this.date = date;
-        this.imgPath = imgPath;
-    }
+    private String pwd;
 
-    public Mindmap(String mmId, String name) {
-        this.mmId = mmId;
-        this.name = name;
-    }
+    private TreeModel tm;
 
     public Mindmap() {
+
     }
 
-    public String getMmId() {
+    public Mindmap(String name) {
+        this.name = name;
+    }
+
+    public Mindmap(Long mmId, String name) {
+        this.mmId = mmId;
+        this.name = name;
+    }
+
+    public Mindmap(Long mmId, String name, Long shareId, Integer shareOn, String pwd) {
+        this.mmId = mmId;
+        this.name = name;
+        this.shareId = shareId;
+        this.shareOn = shareOn;
+        this.pwd = pwd;
+    }
+
+    public Long getMmId() {
         return mmId;
     }
 
-    public void setMmId(String mmId) {
+    public void setMmId(Long mmId) {
         this.mmId = mmId;
     }
 
@@ -45,19 +57,46 @@ public class Mindmap {
         this.name = name;
     }
 
-    public String getDate() {
-        return date;
+    public Long getShareId() {
+        return shareId;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setShareId(Long shareId) {
+        this.shareId = shareId;
     }
 
-    public String getImgPath() {
-        return imgPath;
+    public Integer getShareOn() {
+        return shareOn;
     }
 
-    public void setImgPath(String imgPath) {
-        this.imgPath = imgPath;
+    public void setShareOn(Integer shareOn) {
+        this.shareOn = shareOn;
+    }
+
+    public String getPwd() {
+        return pwd;
+    }
+
+    public void setPwd(String pwd) {
+        this.pwd = pwd;
+    }
+
+    public TreeModel getTm() {
+        return tm;
+    }
+
+    public void setTm(TreeModel tm) {
+        this.tm = tm;
+    }
+
+    @Override
+    public String toString() {
+        return "Mindmap{" +
+                "mmId=" + mmId +
+                ", name='" + name + '\'' +
+                ", shareId=" + shareId +
+                ", shareOn=" + shareOn +
+                ", pwd='" + pwd + '\'' +
+                '}';
     }
 }
