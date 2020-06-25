@@ -6,6 +6,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.DBUtil;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
 
 import java.io.File;
@@ -94,8 +95,10 @@ public class MindMapManager {
         String path = Environment.getExternalStorageDirectory().getPath() + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
         try {
             File f = new File(path + String.valueOf(id) + ".twmm");
-            if (!f.exists())
+            if (!f.exists()){
+                System.out.println(f.getPath());
                 f.createNewFile();
+            }
             writeTreeObject(path + String.valueOf(id) + ".twmm", tm);
         } catch (IOException e) {
             e.printStackTrace();

@@ -47,7 +47,7 @@
             android:textColor="@color/node_select"
             android:textSize="15dp"
             android:drawableTop="@drawable/index_unselect"
-            android:padding="5dp"/>
+            android:paddingTop="5dp"/>
 
         <RadioButton
             android:id="@+id/rb_my"
@@ -61,7 +61,7 @@
             android:textColor="@color/node_select"
             android:textSize="15dp"
             android:drawableTop="@drawable/me_unselect"
-            android:padding="5dp"/>
+            android:paddingTop="5dp"/>
 
 <!--        <RadioButton-->
 <!--            android:id="@+id/rb_my"-->
