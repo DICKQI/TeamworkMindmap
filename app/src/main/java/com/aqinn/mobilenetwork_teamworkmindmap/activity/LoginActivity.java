@@ -50,12 +50,12 @@ public class LoginActivity extends AppCompatActivity {
         /**
          * TODO 获得写文件权限，暂时先写在这里
          */
-        new FileUtil().createAppDirectory();
         int checkWriteExternalStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (checkWriteExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
             //如果没有权限则获取权限 requestCode在后面回调中会用到
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 3);
         }
+        new FileUtil().createAppDirectory();
 
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
 //        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
