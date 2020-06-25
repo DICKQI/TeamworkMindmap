@@ -99,6 +99,7 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
                     bundle.putString("name", mm.getName());
                     intent.putExtras(bundle);
                     startActivity(intent);
+                    dismiss();
                 }
                 break;
         }

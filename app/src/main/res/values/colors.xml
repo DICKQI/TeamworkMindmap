@@ -4,12 +4,12 @@
 <!--    <color name="colorPrimaryDark">#3700B3</color>-->
 <!--    <color name="colorAccent">#03DAC5</color>-->
 
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#91BED4</color>
+    <color name="colorPrimaryDark">#304269</color>
+    <color name="colorAccent">#F26101</color>
 
-    <color name="chelsea_cucumber">#94B55A</color>
-    <color name="chalet_green">#5E703D</color>
+    <color name="node_normal">@color/colorPrimary</color>
+    <color name="node_select">#304269</color>
 
     <color name="white">#FFFFFF</color>
     <color name="hint_of_red">#F9F9F9</color>

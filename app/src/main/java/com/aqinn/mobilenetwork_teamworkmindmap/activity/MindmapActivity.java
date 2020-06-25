@@ -16,6 +16,7 @@ import android.widget.AbsoluteLayout;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,6 +38,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.TreeViewItemLongClic
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.CreateMindmapDialogFragment;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.EditMindnodeDialogFragment;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
@@ -48,12 +50,10 @@ import java.io.IOException;
 public class MindmapActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
     // 组件
-    private AbsoluteLayout al_treeView;
+    private RelativeLayout rl_treeView;
     private TreeView treev_mainTreeView;
-    private Button bt_add_sub;
-    private Button bt_add_node;
-    private Button bt_focus_mid;
-    private Button bt_code_mode;
+    private RelativeLayout rl_fbts;
+    private FloatingActionButton fbt_saveAndExit, fbt_subNode, fbt_node, fbt_focusMid;
     private ImageView iv_app_icon;
 
     // 基本
@@ -62,8 +62,9 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 
     //其它
     private MindMapManager mmm = MindMapManager.getInstance();
-    private float x1, y1, x2 = -1, y2 = -1;
-    private boolean flag = true;
+    private float x_down = -1, y_down = -1, x_down_fbts = -1, y_down_fbts = -1;
+    private int[] rl_fbts_location = new int[2];
+    private int x_move, y_move, x_move_fbts, y_move_fbts;
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -108,14 +109,50 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        al_treeView.setOnTouchListener(this);
+        rl_treeView.setOnTouchListener(this);
+
+        rl_fbts.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        x_down_fbts = event.getRawX();
+                        y_down_fbts = event.getRawY();
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        float x_sub = event.getRawX() - x_down_fbts;
+                        float y_sub = event.getRawY() - y_down_fbts;
+                        rl_fbts.getLocationOnScreen(rl_fbts_location);
+                        x_move_fbts = rl_fbts_location[0];
+                        y_move_fbts = rl_fbts_location[1];
+                        rl_fbts.setX(rl_fbts.getX() + x_sub);
+                        rl_fbts.setY(rl_fbts.getY() + y_sub);
+                        x_down_fbts = event.getRawX();
+                        y_down_fbts = event.getRawY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        break;
+                }
+                return true;
+            }
+        });
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        treev_mainTreeView.focusMidLocation();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                treev_mainTreeView.focusMidLocation();
+            }
+        }).start();
     }
 
     @Override
@@ -193,16 +230,16 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.bt_add_node:
+            case R.id.fbt_node:
                 showEdit("添加同级节点", "", 1);
                 break;
-            case R.id.bt_add_sub:
+            case R.id.fbt_subNode:
                 showEdit("添加子节点", "", 2);
                 break;
-            case R.id.bt_focus_mid:
+            case R.id.fbt_focusMid:
                 treev_mainTreeView.focusMidLocation();
                 break;
-            case R.id.bt_code_mode:
+            case R.id.fbt_saveAndExit:
                 Snackbar.make(v, "代码视图功能敬请期待，长按可保存并返回主界面", Snackbar.LENGTH_SHORT)
                         .setAction("Action", null).show();
                 break;
@@ -210,27 +247,40 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void initAllView() {
-        al_treeView = findViewById(R.id.al_treeView);
+        rl_treeView = findViewById(R.id.rl_treeView);
         treev_mainTreeView = findViewById(R.id.treev_mainTreeView);
-        bt_add_sub = findViewById(R.id.bt_add_sub);
-        bt_add_node = findViewById(R.id.bt_add_node);
-        bt_focus_mid = findViewById(R.id.bt_focus_mid);
-        bt_code_mode = findViewById(R.id.bt_code_mode);
+        fbt_subNode = findViewById(R.id.fbt_subNode);
+        fbt_node = findViewById(R.id.fbt_node);
+        fbt_focusMid = findViewById(R.id.fbt_focusMid);
+        fbt_saveAndExit = findViewById(R.id.fbt_saveAndExit);
 //        iv_app_icon = findViewById(R.id.iv_app_icon);
+        rl_fbts = findViewById(R.id.rl_fbts);
+        rl_fbts.setX(rl_fbts.getX() - 50);
+        rl_fbts.setY(rl_fbts.getY() - 50);
 
-        bt_add_sub.setOnClickListener(this);
-        bt_add_node.setOnClickListener(this);
-        bt_focus_mid.setOnClickListener(this);
-        bt_code_mode.setOnClickListener(this);
+        fbt_subNode.setOnClickListener(this);
+        fbt_node.setOnClickListener(this);
+        fbt_focusMid.setOnClickListener(this);
+        fbt_saveAndExit.setOnClickListener(this);
         ColorMatrix cm = new ColorMatrix();
         cm.setSaturation(0f); // 设置饱和度
         ColorMatrixColorFilter grayColorFilter = new ColorMatrixColorFilter(cm);
 //        iv_app_icon.setColorFilter(grayColorFilter);
 
-        bt_code_mode.setOnLongClickListener(new View.OnLongClickListener() {
+
+        fbt_saveAndExit.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View v) {
-                // TODO 保存 并 返回主页
+            public void onClick(View v) {
+                Mindmap mm = new Mindmap(mmId, name);
+                mm.setTm(treev_mainTreeView.getTreeModel());
+                // 保存
+                mmm.saveMindmap(mm);
+            }
+        });
+
+        fbt_saveAndExit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 Mindmap mm = new Mindmap(mmId, name);
                 mm.setTm(treev_mainTreeView.getTreeModel());
                 // 保存
@@ -238,7 +288,6 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                 // 返回主页
                 Intent intent = new Intent(MindmapActivity.this, IndexActivity.class);
                 startActivity(intent);
-                return false;
             }
         });
     }
@@ -246,21 +295,29 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         switch (event.getAction()) {
-
             case MotionEvent.ACTION_DOWN:
-                x2 = event.getRawX();
-                y2 = event.getRawY();
+                x_down = event.getRawX();
+                y_down = event.getRawY();
                 break;
             case MotionEvent.ACTION_MOVE:
-                float xx = event.getRawX() - x2;
-                float yy = event.getRawY() - y2;
-                treev_mainTreeView.setX(treev_mainTreeView.getX() + xx);
-                treev_mainTreeView.setY(treev_mainTreeView.getY() + yy);
-                x2 = event.getRawX();
-                y2 = event.getRawY();
+                float x_sub = event.getRawX() - x_down;
+                float y_sub = event.getRawY() - y_down;
+                rl_fbts.getLocationOnScreen(rl_fbts_location);
+                x_move = rl_fbts_location[0];
+                y_move = rl_fbts_location[1];
+//                if (event.getRawX() > x_move && event.getRawY() > y_move
+//                        && event.getRawX() < x_move + rl_fbts.getWidth()
+//                        && event.getRawY() < y_move + rl_fbts.getHeight()) {
+//                    rl_fbts.setX(rl_fbts.getX() + x_sub);
+//                    rl_fbts.setY(rl_fbts.getY() + y_sub);
+//                } else {
+                    treev_mainTreeView.setX(treev_mainTreeView.getX() + x_sub);
+                    treev_mainTreeView.setY(treev_mainTreeView.getY() + y_sub);
+//                }
+                x_down = event.getRawX();
+                y_down = event.getRawY();
                 break;
             case MotionEvent.ACTION_UP:
-
                 break;
         }
         return true;

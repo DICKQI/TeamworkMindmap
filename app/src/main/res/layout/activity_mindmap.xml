@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<AbsoluteLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activity.MindmapActivity"
-    android:id="@+id/al_treeView">
-
-    <include
-        android:id="@+id/edit_menu"
-        layout="@layout/div_edit_menu"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_gravity="top"/>
+    android:id="@+id/rl_treeView">
 
     <FrameLayout
         android:id="@+id/fl_treeView"
@@ -23,21 +16,202 @@
         android:clipToPadding="false"
         android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/iv_app_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            app:srcCompat="@drawable/twmm_icon" />
+<!--        <ImageView-->
+<!--            android:id="@+id/iv_app_icon"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            app:srcCompat="@drawable/twmm_icon" />-->
 
         <com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.TreeView
             android:id="@+id/treev_mainTreeView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_x="20dp"
-            android:layout_y="200dp" />
-<!--        android:background="@drawable/box"-->
+            android:layout_height="match_parent" />
+        <!--        android:background="@drawable/box"-->
 
     </FrameLayout>
 
-</AbsoluteLayout>
+    <RelativeLayout
+        android:id="@+id/rl_fbts"
+        android:layout_width="185dp"
+        android:layout_height="185dp"
+        android:background="@drawable/operation_bg_radius"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginEnd="0dp">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:srcCompat="@drawable/move_able"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="65dp"
+            android:layout_marginRight="67dp"
+            android:layout_marginEnd="67dp"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fbt_saveAndExit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="63dp"
+            android:layout_marginEnd="63dp"
+            android:src="@drawable/oper_exit"
+            app:backgroundTint="#F26101"
+            app:maxImageSize="42dp"
+            >
+
+        </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fbt_focusMid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="60dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
+            android:src="@drawable/oper_focus"
+            app:backgroundTint="#F26101"
+            app:maxImageSize="55dp"
+            >
+
+        </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fbt_subNode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="60dp"
+            android:layout_marginRight="120dp"
+            android:layout_marginEnd="120dp"
+            android:src="@drawable/oper_sub"
+            app:backgroundTint="#F26101"
+            app:maxImageSize="40dp"
+            >
+
+        </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fbt_node"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="120dp"
+            android:layout_marginRight="63dp"
+            android:layout_marginEnd="63dp"
+            android:src="@drawable/oper_node"
+            app:backgroundTint="#F26101"
+            app:maxImageSize="40dp"
+            >
+
+        </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+    </RelativeLayout>
+
+
+
+<!--    <include-->
+<!--        android:id="@+id/edit_menu"-->
+<!--        layout="@layout/div_edit_menu"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="56dp"-->
+<!--        android:layout_gravity="top"/>-->
+
+</RelativeLayout>
+
+<!--<RelativeLayout-->
+<!--android:id="@+id/rl_fbts"-->
+<!--android:layout_width="185dp"-->
+<!--android:layout_height="185dp"-->
+<!--android:background="@drawable/operation_bg_radius"-->
+<!--android:layout_alignParentBottom="true"-->
+<!--android:layout_alignParentRight="true"-->
+<!--android:layout_alignParentEnd="true"-->
+<!--android:layout_marginBottom="0dp"-->
+<!--android:layout_marginRight="0dp"-->
+<!--android:layout_marginEnd="0dp">-->
+
+<!--<ImageView-->
+<!--    android:layout_width="50dp"-->
+<!--    android:layout_height="50dp"-->
+<!--    app:srcCompat="@drawable/move_able"-->
+<!--    android:layout_alignParentBottom="true"-->
+<!--    android:layout_alignParentRight="true"-->
+<!--    android:layout_alignParentEnd="true"-->
+<!--    android:layout_marginBottom="50dp"-->
+<!--    android:layout_marginRight="65dp"-->
+<!--    android:layout_marginEnd="65dp"/>-->
+
+<!--<com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--    android:id="@+id/fbt_saveAndExit"-->
+<!--    android:layout_width="wrap_content"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:layout_alignParentBottom="true"-->
+<!--    android:layout_alignParentRight="true"-->
+<!--    android:layout_alignParentEnd="true"-->
+<!--    android:layout_marginBottom="5dp"-->
+<!--    android:layout_marginRight="16dp"-->
+<!--    android:layout_marginEnd="16dp"-->
+<!--    >-->
+
+<!--</com.google.android.material.floatingactionbutton.FloatingActionButton>-->
+
+<!--<com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--    android:id="@+id/fbt_subNode"-->
+<!--    android:layout_width="wrap_content"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:layout_alignParentBottom="true"-->
+<!--    android:layout_alignParentRight="true"-->
+<!--    android:layout_alignParentEnd="true"-->
+<!--    android:layout_marginBottom="86dp"-->
+<!--    android:layout_marginRight="16dp"-->
+<!--    android:layout_marginEnd="16dp"-->
+<!--    >-->
+
+<!--</com.google.android.material.floatingactionbutton.FloatingActionButton>-->
+
+<!--<com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--    android:id="@+id/fbt_focusMid"-->
+<!--    android:layout_width="wrap_content"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:layout_alignParentBottom="true"-->
+<!--    android:layout_alignParentRight="true"-->
+<!--    android:layout_alignParentEnd="true"-->
+<!--    android:layout_marginBottom="5dp"-->
+<!--    android:layout_marginRight="110dp"-->
+<!--    android:layout_marginEnd="110dp"-->
+<!--    >-->
+
+<!--</com.google.android.material.floatingactionbutton.FloatingActionButton>-->
+
+<!--<com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--    android:id="@+id/fbt_node"-->
+<!--    android:layout_width="wrap_content"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:layout_alignParentBottom="true"-->
+<!--    android:layout_alignParentRight="true"-->
+<!--    android:layout_alignParentEnd="true"-->
+<!--    android:layout_marginBottom="86dp"-->
+<!--    android:layout_marginRight="110dp"-->
+<!--    android:layout_marginEnd="110dp"-->
+<!--    >-->
+
+<!--</com.google.android.material.floatingactionbutton.FloatingActionButton>-->
+
+<!--</RelativeLayout>-->

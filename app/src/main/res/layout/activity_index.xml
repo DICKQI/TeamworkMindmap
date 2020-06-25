@@ -39,17 +39,42 @@
             android:checked="true"
             android:text="主页"
             android:layout_height="52dp"
-            android:layout_width="205dp"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
             android:gravity="center"
-            android:button="@null"/>
+            android:button="@null"
+            android:background="@color/colorPrimary"
+            android:textColor="@color/node_select"
+            android:textSize="15dp"
+            android:drawableTop="@drawable/index_unselect"
+            android:padding="5dp"/>
 
         <RadioButton
             android:id="@+id/rb_my"
             android:text="个人"
             android:layout_height="52dp"
-            android:layout_width="205dp"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
             android:gravity="center"
-            android:button="@null"/>
+            android:button="@null"
+            android:background="@color/colorPrimary"
+            android:textColor="@color/node_select"
+            android:textSize="15dp"
+            android:drawableTop="@drawable/me_unselect"
+            android:padding="5dp"/>
+
+<!--        <RadioButton-->
+<!--            android:id="@+id/rb_my"-->
+<!--            android:text="个人"-->
+<!--            android:layout_height="52dp"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_weight="1"-->
+<!--            android:gravity="center"-->
+<!--            android:button="@null"-->
+<!--            android:background="@color/colorPrimary"-->
+<!--            android:textColor="@color/node_select"-->
+<!--            android:drawableLeft="@drawable/me_unselect"-->
+<!--            android:drawablePadding="5dp"/>-->
 
     </RadioGroup>
 
@@ -70,9 +95,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="22dp"
+        android:layout_marginTop="18dp"
         android:text="我的思维导图"
-        android:textSize="18sp" />
+        android:textColor="@color/node_select"
+        android:textSize="22sp"
+        android:textStyle="bold" />
 
     <!--    <AbsoluteLayout-->
 <!--        android:layout_width="match_parent"-->

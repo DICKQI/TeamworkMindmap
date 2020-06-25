@@ -14,7 +14,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/action_bar_height"
-        android:background="@color/chelsea_cucumber"
+        android:background="@color/node_normal"
         android:gravity="center"
         android:orientation="horizontal"
         android:padding="@dimen/padding_super_small">

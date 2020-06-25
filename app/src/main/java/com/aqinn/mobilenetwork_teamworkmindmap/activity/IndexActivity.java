@@ -1,5 +1,6 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.activity;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.view.Menu;
@@ -22,6 +23,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.MyRadioButton;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.CreateMindmapDialogFragment;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.IndexFragment;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.MyFragment;
@@ -40,6 +42,7 @@ public class IndexActivity extends AppCompatActivity {
     private RelativeLayout root;
     private ViewPager vp_main;
     private RadioGroup rg_main;
+    private RadioButton rb_index, rb_my;
     private Toolbar tb_main;
     private TextView tv_main;
 
@@ -70,9 +73,13 @@ public class IndexActivity extends AppCompatActivity {
         rg_main = findViewById(R.id.rg_main);
         tb_main = findViewById(R.id.tb_main);
         tv_main = findViewById(R.id.tv_main);
+        rb_index = findViewById(R.id.rb_index);
+        rb_my = findViewById(R.id.rb_my);
 
         setSupportActionBar(tb_main);
         getSupportActionBar().setTitle("");
+        setRadioButton(R.drawable.index_select, rb_index);
+        setRadioButton(R.drawable.me_unselect, rb_my);
 
         mFragments = new ArrayList<>(2);
         mFragments.add(IndexFragment.newInstance());
@@ -83,6 +90,15 @@ public class IndexActivity extends AppCompatActivity {
         myOnCheckedChangeListener = new MyOnCheckedChangeListener();
         vp_main.addOnPageChangeListener(myPageChangeListener);
         rg_main.setOnCheckedChangeListener(myOnCheckedChangeListener);
+    }
+
+    private void setRadioButton(int drawableId, RadioButton radioButton){
+        //定义底部标签图片大小和位置
+        Drawable drawable = getResources().getDrawable(drawableId);
+        //当这个图片被绘制时，给他绑定一个矩形 ltrb规定这个矩形
+        drawable.setBounds(0, 0, 70, 70);
+        //设置图片在文字的哪个方向
+        radioButton.setCompoundDrawables(null, drawable, null, null);
     }
 
     @Override
@@ -144,10 +160,20 @@ public class IndexActivity extends AppCompatActivity {
 
         }
 
+
+
         @Override
         public void onPageSelected(int position) {
             RadioButton radioButton = (RadioButton) rg_main.getChildAt(position);
             radioButton.setChecked(true);
+            if (position == 0) {
+                setRadioButton(R.drawable.index_select, rb_index);
+                setRadioButton(R.drawable.me_unselect, rb_my);
+            } else {
+                setRadioButton(R.drawable.index_unselect, rb_index);
+                setRadioButton(R.drawable.me_select, rb_my);
+            }
+
         }
 
         @Override

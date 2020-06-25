@@ -280,7 +280,7 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
         float width = 2f;
 
         mPaint.setStrokeWidth(dp2px(mContext, width));
-        mPaint.setColor(mContext.getResources().getColor(R.color.chelsea_cucumber));
+        mPaint.setColor(mContext.getResources().getColor(R.color.node_normal));
 
         int top = from.getTop();
         int formY = top + from.getMeasuredHeight() / 2;
@@ -299,7 +299,8 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         mGestureDetector.onTouchEvent(event);
-        return mMoveAndScaleHandler.onTouchEvent(event);
+//        return mMoveAndScaleHandler.onTouchEvent(event);
+        return false;
     }
 
     public TreeModel<String> getTreeModel() {

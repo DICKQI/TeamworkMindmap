@@ -76,7 +76,7 @@ public class MoveAndScaleHandler implements ScaleGestureDetector.OnScaleGestureL
         lastX = currentX;
         lastY = currentY;
 
-        return true;
+        return true; // TODO 这里如果设置为 true 那就是由TreeView自身来处理手势事件
 
     }
 
