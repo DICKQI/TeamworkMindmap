@@ -1,13 +1,18 @@
 package com.aqinn.mobilenetwork_teamworkmindmap;
 
+import android.Manifest;
 import android.app.Application;
 import android.content.ContentValues;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.os.Environment;
 
+import androidx.core.app.ActivityCompat;
+
 import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.DBHelper;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.cache.memory.impl.UsingFreqLimitedMemoryCache;

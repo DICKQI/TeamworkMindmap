@@ -1,6 +1,8 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
@@ -12,8 +14,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +46,17 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /**
+         * TODO 获得写文件权限，暂时先写在这里
+         */
+        new FileUtil().createAppDirectory();
+        int checkWriteExternalStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (checkWriteExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+            //如果没有权限则获取权限 requestCode在后面回调中会用到
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 3);
+        }
+
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
 //        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_login);
