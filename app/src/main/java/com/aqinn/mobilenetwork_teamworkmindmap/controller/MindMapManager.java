@@ -1,14 +1,20 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.controller;
 
+import android.app.Activity;
 import android.os.Environment;
+import android.os.Handler;
+import android.util.Log;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
+import com.aqinn.mobilenetwork_teamworkmindmap.http.MyHttpPost;
+import com.aqinn.mobilenetwork_teamworkmindmap.http.RespMsg;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.DBUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.HttpUtils;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
 
 import java.io.File;
@@ -16,8 +22,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -42,53 +50,75 @@ public class MindMapManager {
     }
 
     private FileUtil fileUtil = FileUtil.getInstance();
+    private Handler mHandler = new Handler();
 
     public List<Mindmap> getAllMindmap() {
         return DBUtil.queryAllMindmap();
     }
 
     /*
+      TODO
      * 1.上传本地版本并获取shareId
      * 2.根据shareId获取云端版本
      */
+    public Long uploadLocalVersionTreeModel() {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MyHttpPost post = new MyHttpPost("科科的URL");
+                Map<String, String> params = new HashMap<>();
+                params.put("treeModel", "???");
+                RespMsg msg = post.req(params);
+                final String respCodeMsg = msg.getRespCodeMsg();
+                final String respBody = msg.getRespBody();
+            }
+        });
+        t.start();
+        return 0L;
+    }
 
-
+    public TreeModel<String> updateTreeModelByShareId(Long shareId) {
+        String res = "";
+        String json = HttpUtils.post("科科的URL");
+        // 中间不知道需要经过什么处理
+        return json2tm(res);
+    }
 
     /**
      * JSON格式的树转成TreeModel
      * 办法太low了，后期有时间得改
-     * @param json
-     * JSON样例
-     * {
-     *     "node": [
-     *         {
+     *
+     * @param json JSON样例
+     *             {
+     *             "node": [
+     *             {
      *             "content": "A",
      *             "pid": 0,
      *             "nid": 1
-     *         },
-     *         {
+     *             },
+     *             {
      *             "content": "B",
      *             "pid": 1,
      *             "nid": 2
-     *         },
-     *         {
+     *             },
+     *             {
      *             "content": "C",
      *             "pid": 1,
      *             "nid": 3
-     *         },
-     *         {
+     *             },
+     *             {
      *             "content": "D",
      *             "pid": 5,
      *             "nid": 4
-     *         },
-     *         {
+     *             },
+     *             {
      *             "content": "E",
      *             "pid": 2,
      *             "nid": 5
-     *         }
-     *     ],
-     *     "shareId": "1"
-     * }
+     *             }
+     *             ],
+     *             "shareId": "1"
+     *             }
      * @return
      */
     public TreeModel<String> json2tm(String json) {
@@ -166,14 +196,18 @@ public class MindMapManager {
      * @param mmId
      * @return
      */
-    public boolean deleteMindmao(Long mmId) {
+    public boolean deleteMindmap(Long mmId) {
         int res = DBUtil.deleteToDoItem(mmId);
+        Log.d("xxx", "1");
         if (res == 0)
             return false;
+        Log.d("xxx", "2");
         String path = Environment.getExternalStorageDirectory().getPath()
                 + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
+        Log.d("xxx", "3");
         if (fileUtil.deleteFile(path + String.valueOf(mmId) + ".twmm"))
             return false;
+        Log.d("xxx", "4");
         return true;
     }
 
@@ -183,7 +217,7 @@ public class MindMapManager {
                 + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
         try {
             File f = new File(path + String.valueOf(id) + ".twmm");
-            if (!f.exists()){
+            if (!f.exists()) {
                 System.out.println(f.getPath());
                 f.createNewFile();
             }

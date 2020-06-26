@@ -74,6 +74,12 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mindmap);
 
+        int checkWriteExternalStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (checkWriteExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+            //如果没有权限则获取权限 requestCode在后面回调中会用到
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 3);
+        }
+
         try {
             Bundle bundle = getIntent().getExtras();
             name = bundle.getString("name");

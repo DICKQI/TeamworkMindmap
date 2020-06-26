@@ -1,6 +1,7 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.activity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -63,6 +64,12 @@ public class IndexActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_index);
         initAllView();
+
+        int checkWriteExternalStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (checkWriteExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
+            //如果没有权限则获取权限 requestCode在后面回调中会用到
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 3);
+        }
 
     }
 
@@ -163,8 +170,6 @@ public class IndexActivity extends AppCompatActivity {
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
         }
-
-
 
         @Override
         public void onPageSelected(int position) {

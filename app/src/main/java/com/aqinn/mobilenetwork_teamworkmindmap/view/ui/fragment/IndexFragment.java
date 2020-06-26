@@ -1,6 +1,9 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -13,6 +16,8 @@ import android.widget.GridView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -118,13 +123,18 @@ public class IndexFragment extends Fragment{
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.share:
+                // TODO 弹出分享窗口
+                ShareMindmapDialogFragment sdf = new ShareMindmapDialogFragment();
+                FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                sdf.show(ft, "shareMindmapDialogFragment");
                 Snackbar.make(gv_main, "分享给他人协作", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 break;
             case R.id.delete:
                 // 1.删除本地思维导图文件和数据库的文件，
                 // 2. TODO 如果已经分享出去的导图且是思维导图的创建者，还需要执行关协作以及删除shareId
-                if (!mmm.deleteMindmao(mma.getMindmaps().get(selectItemIndex).getMmId())){
+                if (!mmm.deleteMindmap(mma.getMindmaps().get(selectItemIndex).getMmId())){
                     Snackbar.make(gv_main, "删除失败", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                     break;
