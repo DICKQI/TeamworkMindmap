@@ -173,6 +173,7 @@ public class MindMapManager {
         boolean flag = saveMindmap(mm);
         if (!flag)
             return null;
+        Log.d("xxx", "create");
         return mm;
     }
 
@@ -198,16 +199,12 @@ public class MindMapManager {
      */
     public boolean deleteMindmap(Long mmId) {
         int res = DBUtil.deleteToDoItem(mmId);
-        Log.d("xxx", "1");
         if (res == 0)
             return false;
-        Log.d("xxx", "2");
         String path = Environment.getExternalStorageDirectory().getPath()
                 + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
-        Log.d("xxx", "3");
-        if (fileUtil.deleteFile(path + String.valueOf(mmId) + ".twmm"))
+        if (!fileUtil.deleteFile(path + String.valueOf(mmId) + ".twmm"))
             return false;
-        Log.d("xxx", "4");
         return true;
     }
 
