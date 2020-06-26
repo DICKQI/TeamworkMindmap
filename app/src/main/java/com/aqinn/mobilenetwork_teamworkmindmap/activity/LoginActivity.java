@@ -2,6 +2,7 @@ package com.aqinn.mobilenetwork_teamworkmindmap.activity;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -9,6 +10,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,7 +25,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
 
     //按钮设置
     private EditText edtTxt_username;
@@ -31,12 +34,18 @@ public class LoginActivity extends AppCompatActivity {
     private Button bt_login;
     private Button bt_register;
     private Button bt_back;
+    private Button bt_offLine;
     private ImageView iv_passwd2;
     private ImageView iv_verify;
     private TextView tv_verifyText;
+    private CheckBox chk_remember_user;
+    private CheckBox chk_remeber_passwd;
     private String username;
     private String password;
     private String password2;
+    private SharedPreferences sp;
+    private boolean isRemember_passwd = false;
+    private boolean isRemember_user = false;
     //判断是否符合标准
     private boolean isRegister = false;
     private boolean isCorrected = false;
@@ -60,8 +69,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         fileUtil.createAppDirectory();
 
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_login);
         edtTxt_username = findViewById(R.id.username_edit);
         edtTxt_passwd = findViewById(R.id.password_edit);
@@ -69,9 +77,39 @@ public class LoginActivity extends AppCompatActivity {
         bt_login = findViewById(R.id.login_btn);
         bt_back = findViewById(R.id.login_back_btn);
         bt_register = findViewById(R.id.register_btn);
+        bt_offLine = findViewById(R.id.login_offLine);
         iv_passwd2 = findViewById(R.id.login_passwd2_img);
         iv_verify = findViewById(R.id.login_verify_img);
         tv_verifyText = findViewById(R.id.textviewverify);
+        chk_remember_user = findViewById(R.id.login_remember_user);
+        chk_remeber_passwd = findViewById(R.id.login_remember_passwd);
+
+        chk_remember_user.setOnCheckedChangeListener(this);
+        chk_remeber_passwd.setOnCheckedChangeListener(this);
+
+        sp = getSharedPreferences("user", MODE_PRIVATE);
+        if (sp.getString("username",null)!=null){
+            isRemember_user = true;
+            chk_remember_user.setChecked(true);
+            edtTxt_username.setText(sp.getString("username",null));
+        }
+        if (sp.getString("password",null)!=null){
+            isRemember_passwd = true;
+            chk_remeber_passwd.setChecked(true);
+            edtTxt_passwd.setText(sp.getString("password",null));
+        }
+
+        //离线按钮
+        bt_offLine.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setClass(LoginActivity.this, IndexActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+
+        });
 
         //登录按钮
         bt_login.setOnClickListener(new View.OnClickListener() {
@@ -79,6 +117,18 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View view) {
                 username = edtTxt_username.getText().toString().trim();
                 password = edtTxt_passwd.getText().toString().trim();
+                SharedPreferences.Editor editor = sp.edit();
+                if (isRemember_user) {
+                    editor.putString("username", edtTxt_username.getText().toString().trim());
+                } else {
+                    editor.remove("username");
+                }
+                if (isRemember_passwd) {
+                    editor.putString("password", edtTxt_passwd.getText().toString().trim());
+                } else {
+                    editor.remove("password");
+                }
+                editor.commit();
                 loginin_socket();
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, IndexActivity.class);
@@ -100,6 +150,8 @@ public class LoginActivity extends AppCompatActivity {
                 tv_verifyText.setVisibility(View.VISIBLE);
                 bt_back.setVisibility(View.VISIBLE);
                 bt_register.setText("立即注册");
+                chk_remeber_passwd.setVisibility(View.INVISIBLE);
+                chk_remember_user.setVisibility(View.INVISIBLE);
                 if (isRegister) {
                     if (isVerify != true) {
                         tv_verifyText.setText("该用户名已被注册，请重新输入");
@@ -137,6 +189,8 @@ public class LoginActivity extends AppCompatActivity {
                 iv_verify.setVisibility(View.INVISIBLE);
                 tv_verifyText.setVisibility(View.INVISIBLE);
                 bt_back.setVisibility(View.INVISIBLE);
+                chk_remember_user.setVisibility(View.VISIBLE);
+                chk_remeber_passwd.setVisibility(View.VISIBLE);
                 edtTxt_username.setText("");
                 edtTxt_passwd.setText("");
                 edtTxt_passwd2.setText("");
@@ -243,6 +297,36 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    //记住用户名或密码
+    @Override
+    public void onCheckedChanged(CompoundButton checkBox, boolean checked) {
+        switch (checkBox.getId()) {
+            case R.id.login_remember_user:
+                if (checkBox.isPressed()) {
+                    if (checked) {
+                        isRemember_user = true;
+                    } else {
+                        isRemember_user = false;
+                        isRemember_passwd = false;
+                        chk_remeber_passwd.setChecked(false);
+                    }
+                }
+                break;
+            case R.id.login_remember_passwd:
+                if (checkBox.isPressed()) {
+                    if (checked) {
+                        isRemember_passwd = true;
+                        isRemember_user = true;
+                        chk_remember_user.setChecked(true);
+                    } else {
+                        isRemember_passwd = false;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
     void loginin_socket() {
     }
