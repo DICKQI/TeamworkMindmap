@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
@@ -30,8 +31,10 @@ import com.aqinn.mobilenetwork_teamworkmindmap.R;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.MyRadioButton;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.CreateMindmapDialogFragment;
+import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.FindMindmapDialogFragment;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.IndexFragment;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.MyFragment;
+import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.ShareMindmapDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
@@ -41,7 +44,7 @@ import java.util.List;
  * @author Aqinn
  * @date 2020/6/14 9:42 PM
  */
-public class IndexActivity extends AppCompatActivity {
+public class IndexActivity extends AppCompatActivity implements View.OnClickListener {
 
     // 组件
     private RelativeLayout root;
@@ -50,6 +53,7 @@ public class IndexActivity extends AppCompatActivity {
     private RadioButton rb_index, rb_my;
     private Toolbar tb_main;
     private TextView tv_main;
+    private ImageView iv_cloud;
 
     // 其它
     private List<Fragment> mFragments;
@@ -86,6 +90,7 @@ public class IndexActivity extends AppCompatActivity {
         tv_main = findViewById(R.id.tv_main);
         rb_index = findViewById(R.id.rb_index);
         rb_my = findViewById(R.id.rb_my);
+        iv_cloud = findViewById(R.id.iv_cloud);
 
         setSupportActionBar(tb_main);
         getSupportActionBar().setTitle("");
@@ -101,6 +106,7 @@ public class IndexActivity extends AppCompatActivity {
         myOnCheckedChangeListener = new MyOnCheckedChangeListener();
         vp_main.addOnPageChangeListener(myPageChangeListener);
         rg_main.setOnCheckedChangeListener(myOnCheckedChangeListener);
+        iv_cloud.setOnClickListener(this);
     }
 
     private void setRadioButton(int drawableId, RadioButton radioButton){
@@ -132,6 +138,18 @@ public class IndexActivity extends AppCompatActivity {
                     mMenu.getItem(i).setEnabled(false);
                 }
             }
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.iv_cloud:
+                FindMindmapDialogFragment fdf = new FindMindmapDialogFragment();
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                fdf.show(ft, "findMindmapDialogFragment");
+                break;
         }
     }
 

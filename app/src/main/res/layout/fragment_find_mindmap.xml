@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_x="22dp"
         android:layout_y="1dp"
-        android:text="分享思维导图"
+        android:text="导入思维导图"
         android:textColor="@color/node_select"
         android:textSize="25sp"
         android:textStyle="bold" />
@@ -33,7 +33,7 @@
         android:layout_x="85dp"
         android:layout_y="48dp"
         android:ems="10"
-        android:hint="分享后自动生成"
+        android:hint="伙伴提供的ShareId"
         android:inputType="textPersonName" />
 
     <TextView
@@ -55,18 +55,18 @@
         android:layout_y="101dp"
         android:maxLength="6"
         android:digits="1234567890"
-        android:hint="在此设置分享密码"
+        android:hint="输入分享密码"
         android:inputType="textPersonName" />
 
-    <TextView
+    <Button
         android:id="@+id/tv_tips"
-        android:layout_width="350dp"
+        android:layout_width="310dp"
         android:layout_height="wrap_content"
         android:layout_x="14dp"
         android:layout_y="156dp"
-        android:textColor="@color/colorAccent"
-        android:text="Tips:你的小伙伴们可以通过ShareId以及密码与你一同协作\n密码不长于6位,仅支持数字,点击右上角分享/取消分享"
-        android:textSize="10sp" />
+        android:text="添加"
+        style="@style/button_orange"
+        android:background="@drawable/button_blue_backgroud" />
 
     <ImageView
         android:id="@+id/iv_share_or_not"
@@ -74,7 +74,7 @@
         android:layout_height="50dp"
         android:layout_x="280dp"
         android:layout_y="0dp"
-        app:srcCompat="@drawable/share_mm_blue"
+        app:srcCompat="@drawable/cloud_add_mm"
         android:background="@drawable/bg_radius_orange"/>
 
 </AbsoluteLayout>

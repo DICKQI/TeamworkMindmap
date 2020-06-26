@@ -8,6 +8,6 @@ import com.aqinn.mobilenetwork_teamworkmindmap.R;
  */
 public class StyleConfig {
 
-    public static int bt_theme = R.style.button_green;
+//    public static int bt_theme = R.style.button_green;
 
 }

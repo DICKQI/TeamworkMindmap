@@ -37,4 +37,13 @@
         <item name="android:gravity">center</item>
     </style>
 
+    <style name="button_orange">
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="height">30dp</item>
+        <item name="android:textSize">19dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
 </resources>

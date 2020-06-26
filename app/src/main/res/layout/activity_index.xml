@@ -95,11 +95,23 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="16dp"
         android:text="我的思维导图"
         android:textColor="@color/node_select"
         android:textSize="22sp"
         android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/iv_cloud"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="13dp"
+        android:layout_marginEnd="18dp"
+        app:srcCompat="@drawable/cloud_add_mm"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="18dp" />
 
     <!--    <AbsoluteLayout-->
 <!--        android:layout_width="match_parent"-->

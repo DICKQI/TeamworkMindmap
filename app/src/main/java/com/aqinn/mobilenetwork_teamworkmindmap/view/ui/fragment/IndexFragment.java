@@ -123,8 +123,8 @@ public class IndexFragment extends Fragment{
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.share:
-                // TODO 弹出分享窗口
-                ShareMindmapDialogFragment sdf = new ShareMindmapDialogFragment();
+                // TODO 弹出分享窗口 true代表已共享 false代表关共享 还有shareId
+                ShareMindmapDialogFragment sdf = new ShareMindmapDialogFragment(true, 123456L);
                 FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 sdf.show(ft, "shareMindmapDialogFragment");

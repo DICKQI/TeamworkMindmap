@@ -77,8 +77,6 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
         WindowManager.LayoutParams params = win.getAttributes();
         params.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         win.setAttributes(params);
-        bt_confirm.setTextAppearance(StyleConfig.bt_theme);
-        bt_cancel.setTextAppearance(StyleConfig.bt_theme);
     }
 
     @Override
