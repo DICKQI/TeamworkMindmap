@@ -43,6 +43,9 @@ public class LoginActivity extends AppCompatActivity {
     private boolean isEqual = false;
     private boolean isVerify = false;
 
+    //其它
+    private FileUtil fileUtil = FileUtil.getInstance();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
             //如果没有权限则获取权限 requestCode在后面回调中会用到
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 3);
         }
-        new FileUtil().createAppDirectory();
+        fileUtil.createAppDirectory();
 
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
 //        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);

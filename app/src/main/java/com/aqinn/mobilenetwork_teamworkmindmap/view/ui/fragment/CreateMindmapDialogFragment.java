@@ -1,8 +1,10 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -20,6 +22,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
@@ -38,7 +42,7 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
 
     // 组件
     private Button bt_confirm, bt_cancel;
-    private TextView tv_new_mm, tv_name;
+    private TextView tv_new_mm;
     private EditText et_name;
     private ImageView iv_clear;
 
@@ -51,6 +55,7 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.MyDialog);
+
     }
 
     @Nullable
@@ -86,6 +91,12 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
                 dismiss();
                 break;
             case R.id.bt_confirm:
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    //申请WRITE_EXTERNAL_STORAGE权限
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            3);
+                }
                 Mindmap mm = mmm.createMindmap(et_name.getText().toString());
                 if (mm == null) {
                     Snackbar.make(getView(), "创建失败", Snackbar.LENGTH_SHORT)
@@ -109,7 +120,6 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
         bt_confirm = v.findViewById(R.id.bt_confirm);
         bt_cancel = v.findViewById(R.id.bt_cancel);
         tv_new_mm = v.findViewById(R.id.tv_new_mm);
-        tv_name = v.findViewById(R.id.tv_name);
         et_name = v.findViewById(R.id.et_name);
         iv_clear = v.findViewById(R.id.iv_clear);
 

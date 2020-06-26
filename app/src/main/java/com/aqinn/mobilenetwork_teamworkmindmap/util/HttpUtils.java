@@ -106,7 +106,6 @@ public class HttpUtils {
                 return dealResponseResult(stream);
 
             } else {
-                Log.d(TAG, "<<<<<response=" + response);
                 return null;
             }
         } catch (IOException e) {
@@ -138,7 +137,6 @@ public class HttpUtils {
                 return dealResponseResult(stream);
 
             } else {
-                Log.d(TAG, "<<<<<response=" + response);
                 return null;
             }
         } catch (IOException ex) {

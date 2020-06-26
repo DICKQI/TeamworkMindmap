@@ -8,8 +8,9 @@ import java.util.LinkedList;
  */
 public class NodeModel<T> implements Serializable {
 
-    public String mnId;
+    public Long pId;
 
+    public Long mnId;
 
     /**
      * the parent node,if root node parent node=null;
@@ -94,4 +95,19 @@ public class NodeModel<T> implements Serializable {
         this.hidden = hidden;
     }
 
+    public Long getMnId() {
+        return mnId;
+    }
+
+    public void setMnId(Long mnId) {
+        this.mnId = mnId;
+    }
+
+    public Long getpId() {
+        return pId;
+    }
+
+    public void setpId(Long pId) {
+        this.pId = pId;
+    }
 }
