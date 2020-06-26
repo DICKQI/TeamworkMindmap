@@ -2,6 +2,8 @@ package com.aqinn.mobilenetwork_teamworkmindmap.controller;
 
 import android.os.Environment;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
@@ -13,7 +15,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * @author Aqinn
@@ -36,8 +41,86 @@ public class MindMapManager {
         private static final MindMapManager instance = new MindMapManager();
     }
 
+    private FileUtil fileUtil = FileUtil.getInstance();
+
     public List<Mindmap> getAllMindmap() {
         return DBUtil.queryAllMindmap();
+    }
+
+    /*
+     * 1.上传本地版本并获取shareId
+     * 2.根据shareId获取云端版本
+     */
+
+
+
+    /**
+     * JSON格式的树转成TreeModel
+     * 办法太low了，后期有时间得改
+     * @param json
+     * JSON样例
+     * {
+     *     "node": [
+     *         {
+     *             "content": "A",
+     *             "pid": 0,
+     *             "nid": 1
+     *         },
+     *         {
+     *             "content": "B",
+     *             "pid": 1,
+     *             "nid": 2
+     *         },
+     *         {
+     *             "content": "C",
+     *             "pid": 1,
+     *             "nid": 3
+     *         },
+     *         {
+     *             "content": "D",
+     *             "pid": 5,
+     *             "nid": 4
+     *         },
+     *         {
+     *             "content": "E",
+     *             "pid": 2,
+     *             "nid": 5
+     *         }
+     *     ],
+     *     "shareId": "1"
+     * }
+     * @return
+     */
+    public TreeModel<String> json2tm(String json) {
+        JSONObject jo = JSONObject.parseObject(json);
+        Long shareId = jo.getLong("shareId");
+        JSONArray ja = jo.getJSONArray("node");
+        List<NodeModel<String>> nmsl = new ArrayList<>();
+        for (int i = 0; i < ja.size(); i++) {
+            JSONObject tempJo = (JSONObject) ja.get(i);
+            NodeModel<String> nm = new NodeModel<>(tempJo.getString("content"));
+            nm.setMnId(tempJo.getLong("nid"));
+            nm.setpId(tempJo.getLong("pid"));
+            nmsl.add(nm);
+        }
+        NodeModel nmroot = new NodeModel("根节点出错");
+        for (int i = 0; i < nmsl.size(); i++) {
+            if (nmsl.get(i).pId == 0L)
+                nmroot = nmsl.get(i);
+            for (int j = 0; j < nmsl.size(); j++) {
+                if (nmsl.get(i) == nmsl.get(j))
+                    continue;
+                if (nmsl.get(i).getMnId() == nmsl.get(j).getpId()) {
+                    nmsl.get(i).getChildNodes().add(nmsl.get(j));
+                    nmsl.get(j).setParentNode(nmsl.get(i));
+                }
+            }
+        }
+        if ("根节点出错".equals(String.valueOf(nmroot.getValue())))
+            return null;
+        TreeModel<String> tm = new TreeModel<>(nmroot);
+        tm.setShareId(shareId);
+        return tm;
     }
 
     /**
@@ -87,12 +170,17 @@ public class MindMapManager {
         int res = DBUtil.deleteToDoItem(mmId);
         if (res == 0)
             return false;
+        String path = Environment.getExternalStorageDirectory().getPath()
+                + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
+        if (fileUtil.deleteFile(path + String.valueOf(mmId) + ".twmm"))
+            return false;
         return true;
     }
 
 
     public boolean saveTree(Long id, TreeModel tm) {
-        String path = Environment.getExternalStorageDirectory().getPath() + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
+        String path = Environment.getExternalStorageDirectory().getPath()
+                + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
         try {
             File f = new File(path + String.valueOf(id) + ".twmm");
             if (!f.exists()){

@@ -17,6 +17,8 @@ import java.util.Stack;
  */
 public class TreeModel<T> implements Serializable {
 
+    private Long shareId;
+
     /**
      * the root for the tree
      */
@@ -256,6 +258,11 @@ public class TreeModel<T> implements Serializable {
         return(oi.readObject());
     }
 
+    public Long getShareId() {
+        return shareId;
+    }
 
-
+    public void setShareId(Long shareId) {
+        this.shareId = shareId;
+    }
 }

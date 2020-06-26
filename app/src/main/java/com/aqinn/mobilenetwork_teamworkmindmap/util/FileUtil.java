@@ -4,6 +4,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
+import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Conf;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
@@ -22,6 +23,20 @@ import java.io.ObjectOutputStream;
  * @date 2020/6/16 12:49 PM
  */
 public class FileUtil {
+
+    /***********
+     * 单例模式 *
+     ***********/
+    private FileUtil() {
+    }
+
+    public static FileUtil getInstance() {
+        return FileUtil.Inner.instance;
+    }
+
+    private static class Inner {
+        private static final FileUtil instance = new FileUtil();
+    }
 
     /******************************
      * 只需要调用一次的创建文件夹代码 *
@@ -53,6 +68,14 @@ public class FileUtil {
             tempDir.mkdirs();
         }
 
+    }
+
+    public boolean deleteFile(String filePath) {
+        File file = new File(filePath);
+        if (file.isFile() && file.exists()) {
+            return file.delete();
+        }
+        return false;
     }
 
 
@@ -89,7 +112,7 @@ public class FileUtil {
      ***********************/
 
 
-    public static TreeModel<String> readTreeObject(String filePath) throws IOException, ClassNotFoundException, InvalidClassException {
+    public TreeModel<String> readTreeObject(String filePath) throws IOException, ClassNotFoundException, InvalidClassException {
         TreeModel<String> tree;
         FileInputStream fos = new FileInputStream(filePath);
         ObjectInputStream ois = new ObjectInputStream(fos);

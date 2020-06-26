@@ -17,9 +17,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.activity.IndexActivity;
 import com.aqinn.mobilenetwork_teamworkmindmap.activity.MindmapActivity;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindmapAdapter;
+import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
+import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.MyGridView;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
 import com.google.android.material.snackbar.Snackbar;
@@ -39,6 +42,7 @@ public class IndexFragment extends Fragment{
     // 其它
     public static MindmapAdapter mma;
     private MindMapManager mmm = MindMapManager.getInstance();
+    private int selectItemIndex = 0;
 
     public static IndexFragment newInstance() {
         IndexFragment fragment = new IndexFragment();
@@ -100,10 +104,14 @@ public class IndexFragment extends Fragment{
             @Override
             public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
                 AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+                selectItemIndex = info.position;
+                if (selectItemIndex == 0)
+                    return;
                 MenuInflater menuInflater = getActivity().getMenuInflater();
                 menuInflater.inflate(R.menu.mindmap_grid_item_menu, menu);
             }
         });
+
     }
 
     @Override
@@ -114,8 +122,22 @@ public class IndexFragment extends Fragment{
                         .setAction("Action", null).show();
                 break;
             case R.id.delete:
-                Snackbar.make(gv_main, "删除思维导图确认？", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                // 1.删除本地思维导图文件和数据库的文件，
+                // 2. TODO 如果已经分享出去的导图且是思维导图的创建者，还需要执行关协作以及删除shareId
+                if (!mmm.deleteMindmao(mma.getMindmaps().get(selectItemIndex).getMmId())){
+                    Snackbar.make(gv_main, "删除失败", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    break;
+                }
+                // TODO 这样直接更换一个Adapter有点low，
+                //  但是没办法，正常的notifyDataSetChanged()会把第一个"新建思维导图"给删掉
+                List<Mindmap> mindmapsTemp = new ArrayList<>();
+                mma.getMindmaps().remove(selectItemIndex);
+                for (int i = 0; i < mma.getMindmaps().size(); i++) {
+                    mindmapsTemp.add(i, mma.getMindmaps().get(i));
+                }
+                mma = new MindmapAdapter(getActivity(), mindmapsTemp);
+                gv_main.setAdapter(mma);
                 break;
         }
         return true;
@@ -123,32 +145,6 @@ public class IndexFragment extends Fragment{
 
     private List<Mindmap> testData() {
         List<Mindmap> mindmaps = new ArrayList<>();
-//        Mindmap m0 = new Mindmap("add", "");
-//        Mindmap m1 = new Mindmap("1001", "Mindmap One");
-//        Mindmap m2 = new Mindmap("1002", "Mindmap Two");
-//        Mindmap m3 = new Mindmap("1003", "Mindmap Three");
-//        Mindmap m4 = new Mindmap("1004", "Mindmap Four");
-//        Mindmap m5 = new Mindmap("1005", "Mindmap Five");
-//        Mindmap m6 = new Mindmap("1006", "Mindmap Six");
-//        Mindmap m7 = new Mindmap("1007", "Mindmap Seven");
-//        Mindmap m8 = new Mindmap("1008", "Mindmap Eight");
-//        Mindmap m9 = new Mindmap("1009", "Mindmap Nine");
-//        Mindmap m10 = new Mindmap("1010", "Mindmap Ten");
-//        Mindmap m11 = new Mindmap("1011", "Mindmap Eleven");
-//        Mindmap m12 = new Mindmap("1012", "Mindmap Twelve");
-//        mindmaps.add(m0);
-//        mindmaps.add(m1);
-//        mindmaps.add(m2);
-//        mindmaps.add(m3);
-//        mindmaps.add(m4);
-//        mindmaps.add(m5);
-//        mindmaps.add(m6);
-//        mindmaps.add(m7);
-//        mindmaps.add(m8);
-//        mindmaps.add(m9);
-//        mindmaps.add(m10);
-//        mindmaps.add(m11);
-//        mindmaps.add(m12);
         mindmaps = mmm.getAllMindmap();
         Mindmap add = new Mindmap("add");
         mindmaps.add(0, add);

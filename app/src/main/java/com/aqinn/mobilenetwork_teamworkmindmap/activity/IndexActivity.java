@@ -64,8 +64,6 @@ public class IndexActivity extends AppCompatActivity {
         setContentView(R.layout.activity_index);
         initAllView();
 
-
-
     }
 
     @Override

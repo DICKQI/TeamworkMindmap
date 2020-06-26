@@ -62,6 +62,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 
     //其它
     private MindMapManager mmm = MindMapManager.getInstance();
+    private FileUtil fileUtil = FileUtil.getInstance();
     private float x_down = -1, y_down = -1, x_down_fbts = -1, y_down_fbts = -1;
     private int[] rl_fbts_location = new int[2];
     private int x_move, y_move, x_move_fbts, y_move_fbts;
@@ -155,7 +156,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         TreeModel<String> tree = null;
         String path = Environment.getExternalStorageDirectory().getPath() + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
         try {
-            tree = FileUtil.readTreeObject(path + String.valueOf(mmId) + ".twmm");
+            tree = fileUtil.readTreeObject(path + String.valueOf(mmId) + ".twmm");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -166,14 +167,19 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 //            final NodeModel<String> dk = new NodeModel<>("dk");
 //            final NodeModel<String> zzq = new NodeModel<>("zzq");
 //            final NodeModel<String> zzf = new NodeModel<>("zzf");
-//            final NodeModel<String> gjr = new NodeModel<>("gjr");
+//             NodeModel<String> gjr = new NodeModel<>("gjr");
 //            final NodeModel<String> gjn = new NodeModel<>("gjn");
+//            gjr.childNodes.add(gjn);
 //
 //
 //            tree = new TreeModel<>(teamwork_mindmap);
 //            tree.addNode(teamwork_mindmap, dk, zzq, gjr);
-//            tree.addNode(gjr, gjn);
 //            tree.addNode(zzq, zzf);
+////            /**
+////             * 测试一下
+////             */
+////            String json = "{\"node\":[{\"content\":\"A\",\"pid\":0,\"nid\":1},{\"content\":\"B\",\"pid\":1,\"nid\":2},{\"content\":\"C\",\"pid\":1,\"nid\":3},{\"content\":\"D\",\"pid\":5,\"nid\":4},{\"content\":\"E\",\"pid\":2,\"nid\":5}],\"shareId\":\"1\"}";
+////            tree = mmm.json2tm(json);
 //        }
 
         int dx = DensityUtils.dp2px(this, 20);
