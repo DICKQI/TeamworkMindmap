@@ -196,11 +196,12 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
             if (position == 0) {
                 setRadioButton(R.drawable.index_select, rb_index);
                 setRadioButton(R.drawable.me_unselect, rb_my);
+                iv_cloud.setVisibility(View.VISIBLE);
             } else {
                 setRadioButton(R.drawable.index_unselect, rb_index);
                 setRadioButton(R.drawable.me_select, rb_my);
+                iv_cloud.setVisibility(View.INVISIBLE);
             }
-
         }
 
         @Override
