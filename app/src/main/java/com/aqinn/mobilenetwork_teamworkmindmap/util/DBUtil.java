@@ -37,6 +37,40 @@ public class DBUtil {
         dbHelper = MyApplication.dbHelper;
     }
 
+    public static long insertUserOwnMindmap(Long userId, Long mmId) {
+        db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("user_id", userId);
+        values.put("mm_id", mmId);
+        long res = db.insert("tb_user_own_mindmap", null, values);
+        if (res == -1)
+            Log.d("xxx", "插入失败");
+        else
+            Log.d("xxx", "插入成功");
+        db.close();
+        return res;
+    }
+
+    public static int removeUserOwnMindmap(Long mmId) {
+        db = dbHelper.getWritableDatabase();
+        int result = db.delete("tb_user_own_mindmap", "mm_id=?", new String[]{String.valueOf(mmId)});
+        db.close();
+        return result;
+    }
+
+    public static List<Long> getUserOwnMindmap(Long userId) {
+        db = dbHelper.getReadableDatabase();
+        cursor = db.rawQuery("SELECT * FROM tb_user_own_mindmap WHERE user_id=" + userId, null);
+        List<Long> longList = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            Long mm_id = cursor.getLong(cursor.getColumnIndex("mm_id"));
+            longList.add(mm_id);
+        }
+        cursor.close();
+        db.close();
+        return longList;
+    }
+
     /**
      * 查询所有本机存储的思维导图
      *
@@ -138,6 +172,7 @@ public class DBUtil {
 
     /**
      * 根据mmId删除思维导图
+     *
      * @param mmId
      * @return
      */

@@ -61,7 +61,7 @@
     <Button
         android:id="@+id/tv_tips"
         android:layout_width="310dp"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:layout_x="14dp"
         android:layout_y="156dp"
         android:text="添加"

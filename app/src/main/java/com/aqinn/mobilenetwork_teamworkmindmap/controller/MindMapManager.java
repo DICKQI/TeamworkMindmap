@@ -50,6 +50,29 @@ public class MindMapManager {
     private FileUtil fileUtil = FileUtil.getInstance();
     private Handler mHandler = new Handler();
 
+    public long insertUserOwnMindmap(Long userId, Long mmId) {
+        return DBUtil.insertUserOwnMindmap(userId, mmId);
+    }
+
+    public  static int removeUserOwnMindmap(Long mmId) {
+        return DBUtil.removeUserOwnMindmap(mmId);
+    }
+
+    public List<Mindmap> getUserAllMindmap(Long userId) {
+        List<Long> longList = DBUtil.getUserOwnMindmap(userId);
+        List<Mindmap> allMindmap = getAllMindmap();
+        List<Mindmap> userMindmap = new ArrayList<>();
+        for (int i = 0; i < allMindmap.size(); i++) {
+            for (int j = 0; j < longList.size(); j++) {
+                if (longList.get(j).equals(allMindmap.get(i).getMmId())){
+                    userMindmap.add(allMindmap.get(i));
+                    break;
+                }
+            }
+        }
+        return userMindmap;
+    }
+
     public List<Mindmap> getAllMindmap() {
         return DBUtil.queryAllMindmap();
     }
@@ -154,10 +177,11 @@ public class MindMapManager {
     /**
      * 创建Mindmap，并通知主页列表更新
      *
+     * @param userId
      * @param name
      * @return
      */
-    public Mindmap createMindmap(String name) {
+    public Mindmap createMindmap(Long userId, String name) {
         Mindmap mm = new Mindmap(name);
         mm.setPwd("");
         mm.setShareId(null);
@@ -167,7 +191,8 @@ public class MindMapManager {
         TreeModel<String> tree = new TreeModel<>(teamwork_mindmap);
         tree.addNode(teamwork_mindmap);
         mm.setTm(tree);
-        long res = DBUtil.insertMindmap(mm);
+        long res1 = DBUtil.insertMindmap(mm);
+        long res2 = DBUtil.insertUserOwnMindmap(userId, mm.getMmId());
         boolean flag = saveMindmap(mm);
         if (!flag)
             return null;

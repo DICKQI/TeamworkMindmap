@@ -27,6 +27,11 @@ public class DBHelper extends SQLiteOpenHelper {
                 "share_on Integer not null default 0," +
                 "pwd varchar" +
                 ")");
+        db.execSQL("CREATE TABLE IF NOT EXISTS tb_user_own_mindmap(" +
+                "_id INTEGER PRIMARY KEY autoincrement," +
+                "user_id long not null," +
+                "mm_id long not null" +
+                ")");
     }
 
     @Override

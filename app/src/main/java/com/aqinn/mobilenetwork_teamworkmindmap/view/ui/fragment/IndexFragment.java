@@ -28,6 +28,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindmapAdapter;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.MyGridView;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
 import com.google.android.material.snackbar.Snackbar;
@@ -154,8 +155,8 @@ public class IndexFragment extends Fragment{
     }
 
     private List<Mindmap> testData() {
-        List<Mindmap> mindmaps = new ArrayList<>();
-        mindmaps = mmm.getAllMindmap();
+        // 筛选出只有本用户的Mindmap
+        List<Mindmap> mindmaps = mmm.getUserAllMindmap(CommonUtil.getUser(getActivity()));
         Mindmap add = new Mindmap("add");
         mindmaps.add(0, add);
         return mindmaps;

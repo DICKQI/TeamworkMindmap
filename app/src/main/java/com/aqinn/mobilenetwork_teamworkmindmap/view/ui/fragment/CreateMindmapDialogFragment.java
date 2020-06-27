@@ -30,6 +30,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.R;
 import com.aqinn.mobilenetwork_teamworkmindmap.activity.MindmapActivity;
 import com.aqinn.mobilenetwork_teamworkmindmap.config.StyleConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -95,7 +96,7 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
                     ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                             3);
                 }
-                Mindmap mm = mmm.createMindmap(et_name.getText().toString());
+                Mindmap mm = mmm.createMindmap(CommonUtil.getUser(getActivity()), et_name.getText().toString());
                 if (mm == null) {
                     Snackbar.make(getView(), "创建失败", Snackbar.LENGTH_SHORT)
                             .setAction("Action", null).show();
