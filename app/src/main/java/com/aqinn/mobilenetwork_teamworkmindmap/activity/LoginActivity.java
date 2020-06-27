@@ -328,10 +328,12 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         }
     }
 
-    void loginin_socket() {
+    // TODO 记得把记录用户名密码的事件实现
+    private void loginin_socket() {
+
     }
 
-    void register_socket() {
+    private void register_socket() {
 
     }
 
