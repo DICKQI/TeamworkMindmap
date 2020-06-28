@@ -83,11 +83,12 @@ public class DBUtil {
         Mindmap mm;
         while (cursor.moveToNext()) {
             Long _id = cursor.getLong(cursor.getColumnIndex("_id"));
+            Long ownerId = cursor.getLong(cursor.getColumnIndex("owner_id"));
             String name = cursor.getString(cursor.getColumnIndex("name"));
             Long shareId = cursor.getLong(cursor.getColumnIndex("share_id"));
             String pwd = cursor.getString(cursor.getColumnIndex("pwd"));
             int shareOn = Integer.parseInt(cursor.getString(cursor.getColumnIndex("share_on")));
-            mm = new Mindmap(_id, name, shareId, shareOn, pwd);
+            mm = new Mindmap(_id, ownerId, name, shareId, shareOn, pwd);
             mmList.add(mm);
         }
         cursor.close();
@@ -107,11 +108,12 @@ public class DBUtil {
         Mindmap mm = null;
         while (cursor.moveToNext()) {
             Long _id = cursor.getLong(cursor.getColumnIndex("_id"));
+            Long ownerId = cursor.getLong(cursor.getColumnIndex("owner_id"));
             String name = cursor.getString(cursor.getColumnIndex("name"));
             Long shareId = cursor.getLong(cursor.getColumnIndex("share_id"));
             int shareOn = Integer.parseInt(cursor.getString(cursor.getColumnIndex("share_on")));
             String pwd = cursor.getString(cursor.getColumnIndex("pwd"));
-            mm = new Mindmap(_id, name, shareId, shareOn, pwd);
+            mm = new Mindmap(_id, ownerId, name, shareId, shareOn, pwd);
         }
         cursor.close();
         db.close();
@@ -127,6 +129,7 @@ public class DBUtil {
         db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("_id", mm.getMmId());
+        values.put("owner_id", mm.getOwnerId());
         values.put("name", mm.getName());
         values.put("share_id", mm.getShareId());
         values.put("share_on", mm.getShareOn());

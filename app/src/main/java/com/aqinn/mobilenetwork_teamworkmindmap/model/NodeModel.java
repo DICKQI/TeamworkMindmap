@@ -12,6 +12,8 @@ public class NodeModel<T> implements Serializable {
 
     public Long mnId;
 
+    public Long nId;
+
     /**
      * the parent node,if root node parent node=null;
      */
@@ -109,5 +111,13 @@ public class NodeModel<T> implements Serializable {
 
     public void setpId(Long pId) {
         this.pId = pId;
+    }
+
+    public Long getnId() {
+        return nId;
+    }
+
+    public void setnId(Long nId) {
+        this.nId = nId;
     }
 }

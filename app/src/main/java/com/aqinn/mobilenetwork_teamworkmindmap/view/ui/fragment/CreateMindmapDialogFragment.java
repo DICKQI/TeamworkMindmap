@@ -96,7 +96,8 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
                     ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                             3);
                 }
-                Mindmap mm = mmm.createMindmap(CommonUtil.getUser(getActivity()), et_name.getText().toString());
+                Long userId = CommonUtil.getUser(getActivity());
+                Mindmap mm = mmm.createMindmap(userId, userId, et_name.getText().toString());
                 if (mm == null) {
                     Snackbar.make(getView(), "创建失败", Snackbar.LENGTH_SHORT)
                             .setAction("Action", null).show();

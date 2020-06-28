@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.alibaba.fastjson.JSONObject;
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
@@ -18,6 +19,10 @@ import com.aqinn.mobilenetwork_teamworkmindmap.util.DensityUtils;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.RightTreeLayoutManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.TreeView;
+
+import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TestActivity extends AppCompatActivity {
 
@@ -35,6 +40,9 @@ public class TestActivity extends AppCompatActivity {
         initAllView();
     }
 
+    private final String URL_REGISTER = "http://49.234.71.210/user/register/";
+    private final String URL_LOGIN = "http://49.234.71.210/user/";
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -42,20 +50,31 @@ public class TestActivity extends AppCompatActivity {
         bt_test.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String url = "https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/121.6544,25.1552/weather.json";
-                MyHttpUtil.get(url, new MyHttpUtil.HttpCallbackListener() {
+                JSONObject jo = new JSONObject();
+                jo.put("email", "aqinnfortest@qq.com");
+                jo.put("password", "123");
+                String json = jo.toJSONString();
+                String url = URL_LOGIN;
+                Map<String, String> header = new HashMap<>();
+                MyHttpUtil.post(url, header, json, new MyHttpUtil.HttpCallbackListener() {
                     @Override
-                    public void onFinish(String response) {
-                        Log.d("xxx", "Finish:\n" + response);
+                    public void beforeFinish(HttpURLConnection connection) {
+                        Log.d("xxx", "beforeFinish:\n" + connection.getHeaderFields().toString() + "\n");
+                        Log.d("xxx", "beforeFinish: Set-Cookie\n" + connection.getHeaderField("Set-Cookie") + "\n");
                     }
                     @Override
-                    public void onError(Exception e) {
-                        Log.d("xxx", e.getMessage());
+                    public void onFinish(String response) {
+                        Log.d("xxx", "onFinish:\n" + response + "\n");
+                    }
+
+                    @Override
+                    public void onError(Exception e, String response) {
+                        Log.d("xxx", "onError e:\n" + e.getMessage() + "\n");
+                        Log.d("xxx", "onError response:\n" + response + "\n");
                     }
                 });
             }
         });
-
     }
 
     private void initAllView() {
@@ -63,3 +82,83 @@ public class TestActivity extends AppCompatActivity {
     }
 
 }
+
+// 各种写法
+
+// 注册
+/**
+ * JSONObject jo = new JSONObject();
+ *                 jo.put("email", "aqinnfortest@qq.com");
+ *                 jo.put("nickname", "aqinn");
+ *                 jo.put("password", "123");
+ *                 String json = jo.toJSONString();
+ *                 String url = URL_REGISTER;
+ *                 MyHttpUtil.post(url, json, new MyHttpUtil.HttpCallbackListener() {
+ *                     @Override
+ *                     public void beforeFinish(HttpURLConnection connection) {
+ *                         Log.d("xxx", "beforeFinish:\n" + connection.getHeaderFields().toString() + "\n");
+ *                         Log.d("xxx", "beforeFinish: Set-Cookie\n" + connection.getHeaderField("Set-Cookie") + "\n");
+ *                     }
+ *                     @Override
+ *                     public void onFinish(String response) {
+ *                         Log.d("xxx", "onFinish:\n" + response + "\n");
+ *                     }
+ *
+ *                     @Override
+ *                     public void onError(Exception e, String response) {
+ *                         Log.d("xxx", "onError e:\n" + e.getMessage() + "\n");
+ *                         Log.d("xxx", "onError response:\n" + response + "\n");
+ *                     }
+ *                 });
+ */
+
+// 登录    登录要保存Header里的Set-Cookie
+/**
+ *  JSONObject jo = new JSONObject();
+ *                 jo.put("email", "aqinnfortest@qq.com");
+ *                 jo.put("password", "123");
+ *                 String json = jo.toJSONString();
+ *                 String url = URL_LOGIN;
+ *                 Map<String, String> header = new HashMap<>();
+ *                 MyHttpUtil.post(url, json, new MyHttpUtil.HttpCallbackListener() {
+ *                     @Override
+ *                     public void beforeFinish(HttpURLConnection connection) {
+ *                         Log.d("xxx", "beforeFinish:\n" + connection.getHeaderFields().toString() + "\n");
+ *                         Log.d("xxx", "beforeFinish: Set-Cookie\n" + connection.getHeaderField("Set-Cookie") + "\n");
+ *                     }
+ *                     @Override
+ *                     public void onFinish(String response) {
+ *                         Log.d("xxx", "onFinish:\n" + response + "\n");
+ *                     }
+ *
+ *                     @Override
+ *                     public void onError(Exception e, String response) {
+ *                         Log.d("xxx", "onError e:\n" + e.getMessage() + "\n");
+ *                         Log.d("xxx", "onError response:\n" + response + "\n");
+ *                     }
+ *                 });
+ */
+/**
+ * String url = URL_LOGIN;
+ *                 Map<String, String> header = new HashMap<>();
+ *                 header.put("Cookie", "sessionid=8p6ayn3i0fxyop96k0r47t5dhm2eeegb; expires=Sun, 12 Jul 2020 06:46:54 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax");
+ *                 MyHttpUtil.get(url, header, new MyHttpUtil.HttpCallbackListener() {
+ *                     @Override
+ *                     public void beforeFinish(HttpURLConnection connection) {
+ *                         Log.d("xxx", "beforeFinish:\n" + connection.getHeaderFields().toString() + "\n");
+ *                         Log.d("xxx", "beforeFinish: Set-Cookie\n" + connection.getHeaderField("Set-Cookie") + "\n");
+ *                     }
+ *                     @Override
+ *                     public void onFinish(String response) {
+ *                         Log.d("xxx", "onFinish:\n" + response + "\n");
+ *                     }
+ *
+ *                     @Override
+ *                     public void onError(Exception e, String response) {
+ *                         Log.d("xxx", "onError e:\n" + e.getMessage() + "\n");
+ *                         Log.d("xxx", "onError response:\n" + response + "\n");
+ *                     }
+ *                 });
+ */
+
+

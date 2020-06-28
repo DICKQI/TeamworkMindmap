@@ -493,11 +493,14 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
     /**
      * 添加同层节点
      *
+     * @param nId
      * @param nodeValue
      */
-    public void addNode(String nodeValue) {
+    public void addNode(Long nId, String nodeValue) {
         NodeModel<String> addNode = new NodeModel<>(nodeValue);
+        addNode.setnId(nId);
         NodeModel<String> parentNode = getCurrentFocusNode().getParentNode();
+        addNode.setpId(parentNode.getnId());
         if (parentNode != null) {
             mTreeModel.addNode(parentNode, addNode);
             Log.i(TAG, "addNode: true");
@@ -508,10 +511,13 @@ public class TreeView extends ViewGroup implements ScaleGestureDetector.OnScaleG
     /**
      * 添加子节点
      *
+     * @param nId
      * @param nodeValue
      */
-    public void addSubNode(String nodeValue) {
+    public void addSubNode(Long nId, String nodeValue) {
         NodeModel<String> addNode = new NodeModel<>(nodeValue);
+        addNode.setnId(nId);
+        addNode.setpId(getCurrentFocusNode().getnId());
         mTreeModel.addNode(getCurrentFocusNode(), addNode);
         addNodeViewToGroup(addNode);
     }

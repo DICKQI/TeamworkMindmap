@@ -205,12 +205,27 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                         Snackbar.make(treev_mainTreeView, "根节点不能添加同级节点", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                     }
-                    treev_mainTreeView.addNode(mnContent);
+                    Long nId1 = mmm.getNewNodeId(mmId);
+                    if (nId1 != -1L){
+                        treev_mainTreeView.addNode(nId1, mnContent);
+                    }
+                    else {
+                        Snackbar.make(treev_mainTreeView, "添加同级节点失败", Snackbar.LENGTH_SHORT)
+                                .setAction("Action", null).show();
+                    }
                     break;
                 case 2:
-                    treev_mainTreeView.addSubNode(mnContent);
+                    Long nId2 = mmm.getNewNodeId(mmId);
+                    if (nId2 != -1L){
+                        treev_mainTreeView.addSubNode(nId2, mnContent);
+                    }
+                    else {
+                        Snackbar.make(treev_mainTreeView, "添加子级节点失败", Snackbar.LENGTH_SHORT)
+                                .setAction("Action", null).show();
+                    }
                     break;
                 case 3:
+                    // TODO
                     if ("zzf删除专用代码aqinn删除专用代码biu删除专用代码".equals(mnContent)) {
                         if (treev_mainTreeView.getTreeModel().getRootNode() == treev_mainTreeView.getCurrentFocusNode()) {
                             Snackbar.make(treev_mainTreeView, "根节点不能删除", Snackbar.LENGTH_SHORT)
@@ -313,8 +328,8 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 //                    rl_fbts.setX(rl_fbts.getX() + x_sub);
 //                    rl_fbts.setY(rl_fbts.getY() + y_sub);
 //                } else {
-                    treev_mainTreeView.setX(treev_mainTreeView.getX() + x_sub);
-                    treev_mainTreeView.setY(treev_mainTreeView.getY() + y_sub);
+                treev_mainTreeView.setX(treev_mainTreeView.getX() + x_sub);
+                treev_mainTreeView.setY(treev_mainTreeView.getY() + y_sub);
 //                }
                 x_down = event.getRawX();
                 y_down = event.getRawY();
@@ -325,7 +340,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         return true;
     }
 
-    //    /**
+//        /**
 //     * 更改节点内容
 //     * @param model
 //     * @param value

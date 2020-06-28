@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -50,11 +51,27 @@ public class MindMapManager {
     private FileUtil fileUtil = FileUtil.getInstance();
     private Handler mHandler = new Handler();
 
-    public long insertUserOwnMindmap(Long userId, Long mmId) {
+    /**
+     * TODO 这是关键，未来开协作判断能不能成功也就是在这里了！！！！！！！！！！！！！！！！！！！！！！
+     * @param mmId
+     * @return
+     */
+    public Long getNewNodeId(Long mmId) {
+        //判断如果mmId是关协作的话，直接返回当前系统时间
+        Mindmap mm = DBUtil.queryMindmapByMmId(mmId);
+        if (mm.getShareOn() == 0) {
+            return System.currentTimeMillis();
+        } else {
+            // TODO 请求后台，返回实际的节点ID
+            return System.currentTimeMillis();
+        }
+    }
+
+    public Long insertUserOwnMindmap(Long userId, Long mmId, Long ownerId) {
         return DBUtil.insertUserOwnMindmap(userId, mmId);
     }
 
-    public  static int removeUserOwnMindmap(Long mmId) {
+    public static int removeUserOwnMindmap(Long mmId) {
         return DBUtil.removeUserOwnMindmap(mmId);
     }
 
@@ -150,8 +167,8 @@ public class MindMapManager {
         for (int i = 0; i < ja.size(); i++) {
             JSONObject tempJo = (JSONObject) ja.get(i);
             NodeModel<String> nm = new NodeModel<>(tempJo.getString("content"));
-            nm.setMnId(tempJo.getLong("nid"));
-            nm.setpId(tempJo.getLong("pid"));
+            nm.setMnId(tempJo.getLong("id"));
+            nm.setpId(tempJo.getLong("parent_node"));
             nmsl.add(nm);
         }
         NodeModel nmroot = new NodeModel("根节点出错");
@@ -174,6 +191,29 @@ public class MindMapManager {
         return tm;
     }
 
+    private JSONArray tmsja = new JSONArray();
+    /**
+     * TreeModel转成后台请求所需格式的JSON
+     */
+    public String tm2json(TreeModel<String> tms) {
+        return nm2json(tms.getRootNode());
+    }
+    public String nm2json(NodeModel<String> nm) {
+        tmsja.clear();
+        nm2jo(nm);
+        return tmsja.toJSONString();
+    }
+    private void nm2jo(NodeModel<String> nms) {
+        JSONObject jo = new JSONObject();
+        jo.put("nodeId", nms.getnId());
+        jo.put("parent_node", nms.getpId());
+        jo.put("content", nms.getValue());
+        tmsja.add(jo);
+        for (NodeModel<String> cnm:nms.getChildNodes()) {
+            nm2jo(cnm);
+        }
+    }
+
     /**
      * 创建Mindmap，并通知主页列表更新
      *
@@ -181,13 +221,16 @@ public class MindMapManager {
      * @param name
      * @return
      */
-    public Mindmap createMindmap(Long userId, String name) {
+    public Mindmap createMindmap(Long userId, Long ownerId, String name) {
         Mindmap mm = new Mindmap(name);
         mm.setPwd("");
         mm.setShareId(null);
         mm.setShareOn(0);
         mm.setMmId(System.currentTimeMillis());
+        mm.setOwnerId(ownerId);
         final NodeModel<String> teamwork_mindmap = new NodeModel<>(name);
+        teamwork_mindmap.setnId(System.currentTimeMillis());
+        teamwork_mindmap.setpId(0L);
         TreeModel<String> tree = new TreeModel<>(teamwork_mindmap);
         tree.addNode(teamwork_mindmap);
         mm.setTm(tree);

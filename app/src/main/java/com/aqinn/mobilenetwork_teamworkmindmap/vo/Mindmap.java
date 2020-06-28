@@ -10,6 +10,8 @@ public class Mindmap {
 
     private Long mmId;
 
+    private Long ownerId;
+
     private String name;
 
     private Long shareId;
@@ -33,8 +35,15 @@ public class Mindmap {
         this.name = name;
     }
 
-    public Mindmap(Long mmId, String name, Long shareId, Integer shareOn, String pwd) {
+    public Mindmap(Long mmId, Long ownerId, String name) {
         this.mmId = mmId;
+        this.ownerId = ownerId;
+        this.name = name;
+    }
+
+    public Mindmap(Long mmId, Long ownerId, String name, Long shareId, Integer shareOn, String pwd) {
+        this.mmId = mmId;
+        this.ownerId = ownerId;
         this.name = name;
         this.shareId = shareId;
         this.shareOn = shareOn;
@@ -89,14 +98,24 @@ public class Mindmap {
         this.tm = tm;
     }
 
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+    }
+
     @Override
     public String toString() {
         return "Mindmap{" +
                 "mmId=" + mmId +
+                ", ownerId=" + ownerId +
                 ", name='" + name + '\'' +
                 ", shareId=" + shareId +
                 ", shareOn=" + shareOn +
                 ", pwd='" + pwd + '\'' +
+                ", tm=" + tm +
                 '}';
     }
 }
