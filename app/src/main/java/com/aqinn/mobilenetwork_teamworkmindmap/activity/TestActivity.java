@@ -62,6 +62,7 @@ public class TestActivity extends AppCompatActivity {
                         Log.d("xxx", "beforeFinish:\n" + connection.getHeaderFields().toString() + "\n");
                         Log.d("xxx", "beforeFinish: Set-Cookie\n" + connection.getHeaderField("Set-Cookie") + "\n");
                     }
+
                     @Override
                     public void onFinish(String response) {
                         Log.d("xxx", "onFinish:\n" + response + "\n");
@@ -130,6 +131,7 @@ public class TestActivity extends AppCompatActivity {
  *                     public void onFinish(String response) {
  *                         Log.d("xxx", "onFinish:\n" + response + "\n");
  *                     }
+ *
  *
  *                     @Override
  *                     public void onError(Exception e, String response) {

@@ -292,16 +292,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                 mm.setTm(treev_mainTreeView.getTreeModel());
                 // 保存
                 mmm.saveMindmap(mm);
-            }
-        });
-
-        fbt_saveAndExit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Mindmap mm = new Mindmap(mmId, name);
-                mm.setTm(treev_mainTreeView.getTreeModel());
-                // 保存
-                mmm.saveMindmap(mm);
+                System.out.println(mmm.tm2json(treev_mainTreeView.getTreeModel()));
                 // 返回主页
                 Intent intent = new Intent(MindmapActivity.this, IndexActivity.class);
                 startActivity(intent);
