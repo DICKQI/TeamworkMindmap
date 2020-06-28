@@ -53,6 +53,7 @@ public class MindMapManager {
 
     /**
      * TODO 这是关键，未来开协作判断能不能成功也就是在这里了！！！！！！！！！！！！！！！！！！！！！！
+     *
      * @param mmId
      * @return
      */
@@ -81,7 +82,7 @@ public class MindMapManager {
         List<Mindmap> userMindmap = new ArrayList<>();
         for (int i = 0; i < allMindmap.size(); i++) {
             for (int j = 0; j < longList.size(); j++) {
-                if (longList.get(j).equals(allMindmap.get(i).getMmId())){
+                if (longList.get(j).equals(allMindmap.get(i).getMmId())) {
                     userMindmap.add(allMindmap.get(i));
                     break;
                 }
@@ -92,6 +93,10 @@ public class MindMapManager {
 
     public List<Mindmap> getAllMindmap() {
         return DBUtil.queryAllMindmap();
+    }
+
+    public Mindmap getMindmapByMmId(Long mmId) {
+        return DBUtil.queryMindmapByMmId(mmId);
     }
 
     /*
@@ -192,24 +197,27 @@ public class MindMapManager {
     }
 
     private JSONArray tmsja = new JSONArray();
+
     /**
      * TreeModel转成后台请求所需格式的JSON
      */
     public String tm2json(TreeModel<String> tms) {
         return nm2json(tms.getRootNode());
     }
+
     public String nm2json(NodeModel<String> nm) {
         tmsja.clear();
         nm2jo(nm);
         return tmsja.toJSONString();
     }
+
     private void nm2jo(NodeModel<String> nms) {
         JSONObject jo = new JSONObject();
         jo.put("nodeId", nms.getnId());
         jo.put("parent_node", nms.getpId());
         jo.put("content", nms.getValue());
         tmsja.add(jo);
-        for (NodeModel<String> cnm:nms.getChildNodes()) {
+        for (NodeModel<String> cnm : nms.getChildNodes()) {
             nm2jo(cnm);
         }
     }
@@ -297,6 +305,25 @@ public class MindMapManager {
         ObjectOutputStream oos = new ObjectOutputStream(fos);
         oos.writeObject(object);
         oos.close();
+    }
+
+    public void mindmapFirstShareOn(Long mmId, Long shareId) {
+        Mindmap mm = getMindmapByMmId(mmId);
+        mm.setShareOn(1);
+        mm.setShareId(shareId);
+        DBUtil.updateMindmap(mm, 0, 1, 1, 1);
+    }
+
+    public void mindmapShareOn(Long mmId) {
+        Mindmap mm = getMindmapByMmId(mmId);
+        mm.setShareOn(1);
+        DBUtil.updateMindmap(mm, 0, 0, 1, 1);
+    }
+
+    public void mindmapShareOff(Long mmId) {
+        Mindmap mm = getMindmapByMmId(mmId);
+        mm.setShareOn(0);
+        DBUtil.updateMindmap(mm, 0, 0, 1, 1);
     }
 
 }

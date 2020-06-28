@@ -40,7 +40,7 @@ import java.util.List;
  * @author Aqinn
  * @date 2020/6/14 10:40 PM
  */
-public class IndexFragment extends Fragment{
+public class IndexFragment extends Fragment {
 
     // 组件
     private GridView gv_main;
@@ -125,7 +125,8 @@ public class IndexFragment extends Fragment{
         switch (item.getItemId()) {
             case R.id.share:
                 // TODO 弹出分享窗口 true代表已共享 false代表关共享 还有shareId
-                ShareMindmapDialogFragment sdf = new ShareMindmapDialogFragment(true, 123456L);
+                Mindmap mm = mmm.getMindmapByMmId(mma.getMindmaps().get(selectItemIndex).getMmId());
+                ShareMindmapDialogFragment sdf = new ShareMindmapDialogFragment(mm.getMmId(), mm.getName(), mm.getShareOn() == 0 ? false : true, mm.getShareId());
                 FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 sdf.show(ft, "shareMindmapDialogFragment");
@@ -135,7 +136,7 @@ public class IndexFragment extends Fragment{
             case R.id.delete:
                 // 1.删除本地思维导图文件和数据库的文件，
                 // 2. TODO 如果已经分享出去的导图且是思维导图的创建者，还需要执行关协作以及删除shareId
-                if (!mmm.deleteMindmap(mma.getMindmaps().get(selectItemIndex).getMmId())){
+                if (!mmm.deleteMindmap(mma.getMindmaps().get(selectItemIndex).getMmId())) {
                     Snackbar.make(gv_main, "删除失败", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                     break;

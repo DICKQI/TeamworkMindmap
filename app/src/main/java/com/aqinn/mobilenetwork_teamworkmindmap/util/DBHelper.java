@@ -23,7 +23,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS tb_mindmap(" +
                 "_id long PRIMARY KEY," +
                 "name varchar not null," +
-                "share_id varchar," +
+                "share_id long not null default -1," +
                 "share_on Integer not null default 0," +
                 "pwd varchar," +
                 "owner_id long not null" +
