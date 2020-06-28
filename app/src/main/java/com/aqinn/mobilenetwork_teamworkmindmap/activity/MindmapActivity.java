@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.alibaba.fastjson.JSONObject;
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
 import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
@@ -30,6 +31,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.DensityUtils;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.NodeView;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.RightTreeLayoutManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.TreeView;
@@ -42,6 +44,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Aqinn
@@ -63,6 +68,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     //其它
     private MindMapManager mmm = MindMapManager.getInstance();
     private FileUtil fileUtil = FileUtil.getInstance();
+    private Mindmap mm;
     private float x_down = -1, y_down = -1, x_down_fbts = -1, y_down_fbts = -1;
     private int[] rl_fbts_location = new int[2];
     private int x_move, y_move, x_move_fbts, y_move_fbts;
@@ -197,6 +203,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void showEdit(String title, String content, int status) {
+        mm = mmm.getMindmapByMmId(mmId);
         final EditMindnodeDialogFragment emdf = new EditMindnodeDialogFragment(title, content, status);
         emdf.setOnEditFragmentListener((String mnContent) -> {
             switch (status) {
@@ -205,21 +212,50 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                         Snackbar.make(treev_mainTreeView, "根节点不能添加同级节点", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                     }
-                    Long nId1 = mmm.getNewNodeId(mmId);
-                    if (nId1 != -1L){
-                        treev_mainTreeView.addNode(nId1, mnContent);
-                    }
+                    Long nId1 = -1L;
+                    if (mm.getShareOn() == 0)
+                        nId1 = mmm.getNewNodeId(mmId);
                     else {
+                        Map<String, String> header = new HashMap<>();
+//                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
+                        header.put("Cookie", "sessionid=8p6ayn3i0fxyop96k0r47t5dhm2eeegb; expires=Sun, 12 Jul 2020 06:46:54 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax");
+                        header.put("Content-Type", "application/json");
+                        JSONObject jo = new JSONObject();
+                        jo.put("content", mnContent);
+                        String data = jo.toJSONString();
+                        MyHttpUtil.post(PublicConfig.url_post_addNode(mm.getShareId()
+                                , treev_mainTreeView.getCurrentFocusNode().parentNode.nId)
+                                , header, data
+                                , new MyHttpUtil.HttpCallbackListener() {
+                                    @Override
+                                    public void beforeFinish(HttpURLConnection connection) {
+
+                                    }
+
+                                    @Override
+                                    public void onFinish(String response) {
+                                        System.out.println(response);
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e, String response) {
+                                        e.printStackTrace();
+                                        System.out.println("response => " + response);
+                                    }
+                                });
+                    }
+                    if (nId1 != -1L) {
+                        treev_mainTreeView.addNode(nId1, mnContent);
+                    } else {
                         Snackbar.make(treev_mainTreeView, "添加同级节点失败", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                     }
                     break;
                 case 2:
                     Long nId2 = mmm.getNewNodeId(mmId);
-                    if (nId2 != -1L){
+                    if (nId2 != -1L) {
                         treev_mainTreeView.addSubNode(nId2, mnContent);
-                    }
-                    else {
+                    } else {
                         Snackbar.make(treev_mainTreeView, "添加子级节点失败", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                     }
