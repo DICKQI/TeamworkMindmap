@@ -35,12 +35,12 @@ public class CommonUtil {
     /**
      * 存记住的账户
      * @param context
-     * @param rememberUserId
+     * @param rememberUsername
      */
-    public static void setRememberUser(Context context, Long rememberUserId) {
+    public static void setRememberUser(Context context, String rememberUsername) {
         SharedPreferences preferences = context.getSharedPreferences("TWMMCache", Context.MODE_PRIVATE);
         SharedPreferences.Editor edit = preferences.edit();
-        edit.putLong("twmm_remember_user", rememberUserId);
+        edit.putString("twmm_remember_user", rememberUsername);
         edit.commit();
     }
 
@@ -49,9 +49,9 @@ public class CommonUtil {
      * @param context
      * @return
      */
-    public static Long getRememberUser(Context context) {
+    public static String getRememberUser(Context context) {
         SharedPreferences preferences = context.getSharedPreferences("TWMMCache", Context.MODE_PRIVATE);
-        return preferences.getLong("twmm_remember_user", -1L);
+        return preferences.getString("twmm_remember_user", null);
     }
 
     /**
@@ -73,8 +73,28 @@ public class CommonUtil {
      */
     public static String getRememberPwd(Context context) {
         SharedPreferences preferences = context.getSharedPreferences("TWMMCache", Context.MODE_PRIVATE);
-        return preferences.getString("twmm_remember_pwd", "");
+        return preferences.getString("twmm_remember_pwd", null);
     }
 
+    /**
+     * 删除用户名
+     * @param context
+     */
+    public static void deleteRememberUser(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences("TWMMCache", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = preferences.edit();
+        edit.remove("twmm_remember_user");
+        edit.commit();
+    }
 
+    /**
+     * 删除密码
+     * @param context
+     */
+    public static void deleteRememberPwd(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences("TWMMCache", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = preferences.edit();
+        edit.remove("twmm_remember_pwd");
+        edit.commit();
+    }
 }

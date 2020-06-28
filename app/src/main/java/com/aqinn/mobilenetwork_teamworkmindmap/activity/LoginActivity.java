@@ -1,6 +1,7 @@
 package com.aqinn.mobilenetwork_teamworkmindmap.activity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -20,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 
 import java.util.regex.Matcher;
@@ -43,7 +45,6 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
     private String username;
     private String password;
     private String password2;
-    private SharedPreferences sp;
     private boolean isRemember_passwd = false;
     private boolean isRemember_user = false;
     //判断是否符合标准
@@ -87,16 +88,15 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         chk_remember_user.setOnCheckedChangeListener(this);
         chk_remeber_passwd.setOnCheckedChangeListener(this);
 
-        sp = getSharedPreferences("user", MODE_PRIVATE);
-        if (sp.getString("username",null)!=null){
+        if (CommonUtil.getRememberUser(this)!=null){
             isRemember_user = true;
             chk_remember_user.setChecked(true);
-            edtTxt_username.setText(sp.getString("username",null));
+            edtTxt_username.setText(CommonUtil.getRememberUser(this));
         }
-        if (sp.getString("password",null)!=null){
+        if (CommonUtil.getRememberPwd(this)!=null){
             isRemember_passwd = true;
             chk_remeber_passwd.setChecked(true);
-            edtTxt_passwd.setText(sp.getString("password",null));
+            edtTxt_passwd.setText(CommonUtil.getRememberPwd(this));
         }
 
         //离线按钮
@@ -111,29 +111,29 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
 
         });
 
+        Context context = this;
         //登录按钮
         bt_login.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View view) {
                 username = edtTxt_username.getText().toString().trim();
                 password = edtTxt_passwd.getText().toString().trim();
-                SharedPreferences.Editor editor = sp.edit();
                 if (isRemember_user) {
-                    editor.putString("username", edtTxt_username.getText().toString().trim());
+                    CommonUtil.setRememberUser(context, edtTxt_username.getText().toString().trim());
                 } else {
-                    editor.remove("username");
+                    CommonUtil.deleteRememberUser(context);
                 }
                 if (isRemember_passwd) {
-                    editor.putString("password", edtTxt_passwd.getText().toString().trim());
+                    CommonUtil.setRememberPwd(context, edtTxt_passwd.getText().toString().trim());
                 } else {
-                    editor.remove("password");
+                    CommonUtil.deleteRememberPwd(context);
                 }
-                editor.commit();
                 loginin_socket();
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, IndexActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
+                finish();
             }
 
         });
