@@ -10,11 +10,13 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,9 +32,10 @@ import java.util.regex.Pattern;
 public class LoginActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
 
     //按钮设置
-    private EditText edtTxt_username;
+    private EditText edtTxt_userEmail;
     private EditText edtTxt_passwd;
     private EditText edtTxt_passwd2;
+    private EditText edtTxt_userNickname;
     private Button bt_login;
     private Button bt_register;
     private Button bt_back;
@@ -42,6 +45,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
     private TextView tv_verifyText;
     private CheckBox chk_remember_user;
     private CheckBox chk_remeber_passwd;
+    private LinearLayout linearLayout_nickname;
     private String username;
     private String password;
     private String password2;
@@ -72,9 +76,10 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
 
 
         setContentView(R.layout.activity_login);
-        edtTxt_username = findViewById(R.id.username_edit);
+        edtTxt_userEmail = findViewById(R.id.useremail_edit);
         edtTxt_passwd = findViewById(R.id.password_edit);
         edtTxt_passwd2 = findViewById(R.id.password2_edit);
+        edtTxt_userNickname = findViewById(R.id.nickname_edit);
         bt_login = findViewById(R.id.login_btn);
         bt_back = findViewById(R.id.login_back_btn);
         bt_register = findViewById(R.id.register_btn);
@@ -84,16 +89,19 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         tv_verifyText = findViewById(R.id.textviewverify);
         chk_remember_user = findViewById(R.id.login_remember_user);
         chk_remeber_passwd = findViewById(R.id.login_remember_passwd);
+        linearLayout_nickname = findViewById(R.id.login_nickname_line);
 
         chk_remember_user.setOnCheckedChangeListener(this);
         chk_remeber_passwd.setOnCheckedChangeListener(this);
 
-        if (CommonUtil.getRememberUser(this)!=null){
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        if (CommonUtil.getRememberUser(this) != null) {
             isRemember_user = true;
             chk_remember_user.setChecked(true);
-            edtTxt_username.setText(CommonUtil.getRememberUser(this));
+            edtTxt_userEmail.setText(CommonUtil.getRememberUser(this));
         }
-        if (CommonUtil.getRememberPwd(this)!=null){
+        if (CommonUtil.getRememberPwd(this) != null) {
             isRemember_passwd = true;
             chk_remeber_passwd.setChecked(true);
             edtTxt_passwd.setText(CommonUtil.getRememberPwd(this));
@@ -116,10 +124,10 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         bt_login.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View view) {
-                username = edtTxt_username.getText().toString().trim();
+                username = edtTxt_userEmail.getText().toString().trim();
                 password = edtTxt_passwd.getText().toString().trim();
                 if (isRemember_user) {
-                    CommonUtil.setRememberUser(context, edtTxt_username.getText().toString().trim());
+                    CommonUtil.setRememberUser(context, edtTxt_userEmail.getText().toString().trim());
                 } else {
                     CommonUtil.deleteRememberUser(context);
                 }
@@ -149,12 +157,15 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                 iv_verify.setVisibility(View.VISIBLE);
                 tv_verifyText.setVisibility(View.VISIBLE);
                 bt_back.setVisibility(View.VISIBLE);
+                linearLayout_nickname.setVisibility(View.VISIBLE);
+                layoutParams.setMargins(0, 40, 0, 0);
+                linearLayout_nickname.setLayoutParams(layoutParams);
                 bt_register.setText("立即注册");
                 chk_remeber_passwd.setVisibility(View.INVISIBLE);
                 chk_remember_user.setVisibility(View.INVISIBLE);
                 if (isRegister) {
                     if (isVerify != true) {
-                        tv_verifyText.setText("该用户名已被注册，请重新输入");
+                        tv_verifyText.setText("该邮箱已被注册，请重新输入");
                         tv_verifyText.setBackgroundColor(Color.RED);
                         iv_verify.setImageResource(R.mipmap.ic_unverified);
                     } else if (isCorrected != true) {
@@ -165,9 +176,13 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                         tv_verifyText.setText("两次密码不一致");
                         tv_verifyText.setBackgroundColor(Color.RED);
                         iv_verify.setImageResource(R.mipmap.ic_unverified);
+                    } else if (edtTxt_userNickname.getText().toString().trim().equals("")) {
+                        tv_verifyText.setText("请输入昵称");
+                        tv_verifyText.setBackgroundColor(Color.RED);
+                        iv_verify.setImageResource(R.mipmap.ic_unverified);
                     } else {
 
-                        username = edtTxt_username.getText().toString().trim();
+                        username = edtTxt_userEmail.getText().toString().trim();
                         password = edtTxt_passwd.getText().toString().trim();
                         password2 = edtTxt_passwd2.getText().toString().trim();
                         register_socket();
@@ -189,17 +204,21 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                 iv_verify.setVisibility(View.INVISIBLE);
                 tv_verifyText.setVisibility(View.INVISIBLE);
                 bt_back.setVisibility(View.INVISIBLE);
+                linearLayout_nickname.setVisibility(View.INVISIBLE);
+                layoutParams.setMargins(0, -40, 0, 0);
+                linearLayout_nickname.setLayoutParams(layoutParams);
                 chk_remember_user.setVisibility(View.VISIBLE);
                 chk_remeber_passwd.setVisibility(View.VISIBLE);
-                edtTxt_username.setText("");
+                edtTxt_userEmail.setText("");
                 edtTxt_passwd.setText("");
                 edtTxt_passwd2.setText("");
+                edtTxt_userNickname.setText("");
             }
 
         });
 
         //用户名监听
-        edtTxt_username.addTextChangedListener(new TextWatcher() {
+        edtTxt_userEmail.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -208,14 +227,27 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
             //判断用户名是否被占用
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String user = edtTxt_username.getText().toString().trim();
+                String user = edtTxt_userEmail.getText().toString().trim();Pattern pattern = Pattern.compile("@");
+                Pattern pattern1 = Pattern.compile("\\.com");
+                Matcher matcher1 = pattern1.matcher((user));
+                Matcher matcher = pattern.matcher(user);
+                if (!matcher.find()||!matcher1.find()){
+                    tv_verifyText.setText("请输入正确的邮箱");
+                    tv_verifyText.setBackgroundColor(Color.RED);
+                    iv_verify.setImageResource(R.mipmap.ic_verified);
+                }else {
+                    tv_verifyText.setText("邮箱地址正确");
+                    tv_verifyText.setBackgroundColor(Color.GREEN);
+                    iv_verify.setImageResource(R.mipmap.ic_verified);
+                }
+
                 //HttpHelper.get("");
                 if (isVerify != true) {
                     iv_verify.setImageResource(R.mipmap.ic_unverified);
-                    tv_verifyText.setText("该用户名已被注册，请重新输入");
+                    tv_verifyText.setText("该邮箱已被注册，请重新输入");
                     tv_verifyText.setBackgroundColor(Color.RED);
                 } else {
-                    tv_verifyText.setText("该用户名可用");
+                    tv_verifyText.setText("该邮箱可用");
                     tv_verifyText.setBackgroundColor(Color.GREEN);
                     iv_verify.setImageResource(R.mipmap.ic_verified);
                 }
@@ -282,9 +314,14 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                     if (passwd.equals(passwd2)) {
                         if (isVerify) {
                             iv_verify.setImageResource(R.mipmap.ic_verified);
-                            tv_verifyText.setText("该用户名密码可用");
+                            tv_verifyText.setText("该邮箱密码可用");
                             isEqual = true;
                             tv_verifyText.setBackgroundColor(Color.GREEN);
+                        }
+                        else {
+                            tv_verifyText.setText("请输入正确的邮箱");
+                            tv_verifyText.setBackgroundColor(Color.RED);
+                            iv_verify.setImageResource(R.mipmap.ic_unverified);
                         }
                     }
                 }

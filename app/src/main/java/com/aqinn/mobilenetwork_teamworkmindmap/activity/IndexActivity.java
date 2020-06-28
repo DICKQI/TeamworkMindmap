@@ -2,6 +2,7 @@ package com.aqinn.mobilenetwork_teamworkmindmap.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -170,6 +171,14 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
             case R.id.mi_setting:
                 Snackbar.make(root, "前往设置页面功能敬请期待", Snackbar.LENGTH_SHORT)
                         .setAction("Action", null).show();
+                break;
+            case R.id.mi_signOut:
+                // TODO 退出登录待写
+                Intent intent = new Intent();
+                intent.setClass(this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
                 break;
             default:
                 break;
