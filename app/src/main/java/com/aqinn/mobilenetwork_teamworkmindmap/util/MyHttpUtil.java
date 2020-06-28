@@ -34,6 +34,7 @@ public class MyHttpUtil {
                 URL url = null;
                 HttpURLConnection connection = null;
                 InputStream is = null;
+                InputStream isError = null;
                 try {
                     url = new URL(address);
                     connection = (HttpURLConnection) url.openConnection();
@@ -42,7 +43,7 @@ public class MyHttpUtil {
                     connection.setDoOutput(true);
                     // 向服务器发送数据
                     connection.setRequestMethod("POST");
-                    for (Map.Entry<String, String> h: header.entrySet()) {
+                    for (Map.Entry<String, String> h : header.entrySet()) {
                         connection.setRequestProperty(h.getKey(), h.getValue());
                     }
                     DataOutputStream out = new DataOutputStream(connection.getOutputStream());
@@ -50,12 +51,19 @@ public class MyHttpUtil {
                     // 得到服务器返回数据
                     //获得结果码
                     int responseCode = connection.getResponseCode();
-                    is = connection.getInputStream();
+                    isError = connection.getErrorStream();
+                    if (isError==null)
+                        is = connection.getInputStream();
                     if (responseCode == 200) {
                         //请求成功 获得返回的流
                         if (listener != null) {
                             listener.beforeFinish(connection);
                             listener.onFinish(inputStream2String(is));
+                        }
+                    } else if (responseCode == 401) {
+                        if (listener != null) {
+                            listener.beforeFinish(connection);
+                            listener.onFinish(inputStream2String(isError));
                         }
                     } else {
                         //请求失败
@@ -101,25 +109,34 @@ public class MyHttpUtil {
                 URL url = null;
                 HttpURLConnection connection = null;
                 InputStream is = null;
+                InputStream isError = null;
                 try {
                     url = new URL(address);
                     connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
                     connection.setConnectTimeout(8000);
                     connection.setReadTimeout(8000);
-                    for (Map.Entry<String, String> h: header.entrySet()) {
+                    for (Map.Entry<String, String> h : header.entrySet()) {
                         connection.setRequestProperty(h.getKey(), h.getValue());
                     }
                     // 得到服务器返回数据
                     //获得结果码
                     int responseCode = connection.getResponseCode();
                     String rm = connection.getResponseMessage();
-                    is = connection.getInputStream();
+                    isError = connection.getErrorStream();
+                    if (isError==null)
+                        is = connection.getInputStream();
+                    Log.d("respond", isError.toString());
                     if (responseCode == 200) {
                         //请求成功 获得返回的流
                         if (listener != null) {
                             listener.beforeFinish(connection);
                             listener.onFinish(inputStream2String(is));
+                        }
+                    } else if (responseCode == 401) {
+                        if (listener != null) {
+                            listener.beforeFinish(connection);
+                            listener.onFinish(inputStream2String(isError));
                         }
                     } else {
                         //请求失败
@@ -154,6 +171,7 @@ public class MyHttpUtil {
                 URL url = null;
                 HttpURLConnection connection = null;
                 InputStream is = null;
+                InputStream isError = null;
                 try {
                     url = new URL(address);
                     connection = (HttpURLConnection) url.openConnection();
@@ -167,12 +185,20 @@ public class MyHttpUtil {
                     // 得到服务器返回数据
                     //获得结果码
                     int responseCode = connection.getResponseCode();
-                    is = connection.getInputStream();
+                    isError = connection.getErrorStream();
+                    if (isError==null)
+                        is = connection.getInputStream();
+                    Log.d("respond", isError.toString());
                     if (responseCode == 200) {
                         //请求成功 获得返回的流
                         if (listener != null) {
                             listener.beforeFinish(connection);
                             listener.onFinish(inputStream2String(is));
+                        }
+                    } else if (responseCode == 401) {
+                        if (listener != null) {
+                            listener.beforeFinish(connection);
+                            listener.onFinish(inputStream2String(isError));
                         }
                     } else {
                         //请求失败
@@ -219,6 +245,7 @@ public class MyHttpUtil {
                 URL url = null;
                 HttpURLConnection connection = null;
                 InputStream is = null;
+                InputStream isError = null;
                 try {
                     url = new URL(address);
                     connection = (HttpURLConnection) url.openConnection();
@@ -228,12 +255,20 @@ public class MyHttpUtil {
                     // 得到服务器返回数据
                     //获得结果码
                     int responseCode = connection.getResponseCode();
-                    is = connection.getInputStream();
+                    isError = connection.getErrorStream();
+                    if (isError==null)
+                        is = connection.getInputStream();
+                    Log.d("respond", isError.toString());
                     if (responseCode == 200) {
                         //请求成功 获得返回的流
                         if (listener != null) {
                             listener.beforeFinish(connection);
                             listener.onFinish(inputStream2String(is));
+                        }
+                    } else if (responseCode == 401) {
+                        if (listener != null) {
+                            listener.beforeFinish(connection);
+                            listener.onFinish(inputStream2String(isError));
                         }
                     } else {
                         //请求失败
@@ -310,7 +345,7 @@ public class MyHttpUtil {
         Map<String, List<String>> responseHeaderMap = conn.getHeaderFields();
         int size = responseHeaderMap.size();
         StringBuilder sbResponseHeader = new StringBuilder();
-        for(int i = 0; i < size; i++){
+        for (int i = 0; i < size; i++) {
             String responseHeaderKey = conn.getHeaderFieldKey(i);
             String responseHeaderValue = conn.getHeaderField(i);
             sbResponseHeader.append(responseHeaderKey);
