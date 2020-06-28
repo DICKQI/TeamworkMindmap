@@ -33,6 +33,28 @@ public class CommonUtil {
     }
 
     /**
+     * 储存登录的cookie
+     * @param context
+     * @param userCookie
+     */
+    public static void setUserCookie(Context context, String userCookie) {
+        SharedPreferences preferences = context.getSharedPreferences("TWMMCache", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = preferences.edit();
+        edit.putString("twmm_user_cookie", userCookie);
+        edit.commit();
+    }
+
+    /**
+     * 获取登录的cookie
+     * @param context
+     * @return
+     */
+    public static String getUserCookie(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences("TWMMCache", Context.MODE_PRIVATE);
+        return preferences.getString("twmm_user_cookie", null);
+    }
+
+    /**
      * 存记住的账户
      * @param context
      * @param rememberUsername
