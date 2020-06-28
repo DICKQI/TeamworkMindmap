@@ -125,7 +125,7 @@ public class PublicConfig {
      * @return
      */
     public static final String url_post_register() {
-        return "http://49.234.71.210/user/register";
+        return "http://49.234.71.210/user/register/";
     }
 
 

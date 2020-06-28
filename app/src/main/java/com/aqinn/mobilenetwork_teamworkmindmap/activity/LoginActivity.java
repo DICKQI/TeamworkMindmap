@@ -7,8 +7,10 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -18,14 +20,23 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
+import com.aqinn.mobilenetwork_teamworkmindmap.http.MyHttpPost;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
 
+import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,9 +57,11 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
     private CheckBox chk_remember_user;
     private CheckBox chk_remeber_passwd;
     private LinearLayout linearLayout_nickname;
-    private String username;
+    private String userEmail;
     private String password;
     private String password2;
+    private String errorString;
+    Context context = this;
     private boolean isRemember_passwd = false;
     private boolean isRemember_user = false;
     //判断是否符合标准
@@ -56,6 +69,8 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
     private boolean isCorrected = false;
     private boolean isEqual = false;
     private boolean isVerify = false;
+    private boolean isLoginOK = false;
+    private boolean isRegisterOK = false;
 
     //其它
     private FileUtil fileUtil = FileUtil.getInstance();
@@ -101,10 +116,52 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
             chk_remember_user.setChecked(true);
             edtTxt_userEmail.setText(CommonUtil.getRememberUser(this));
         }
+        //记住密码直接登录
         if (CommonUtil.getRememberPwd(this) != null) {
             isRemember_passwd = true;
             chk_remeber_passwd.setChecked(true);
             edtTxt_passwd.setText(CommonUtil.getRememberPwd(this));
+            if (CommonUtil.getUserCookie(context) != null) {
+                Map<String, String> header = new HashMap<>();
+                header.put("Cookie", CommonUtil.getUserCookie(context));
+                MyHttpUtil.get(PublicConfig.url_get_verifyLogin(), header, new MyHttpUtil.HttpCallbackListener() {
+                    @Override
+                    public void beforeFinish(HttpURLConnection connection) {
+
+                    }
+
+                    @Override
+                    public void onFinish(String response) {
+                        if (response != null) {
+                            JSONObject json = JSON.parseObject(response);
+                            if (json.getBoolean("status")) {
+                                isLoginOK = true;
+                                CommonUtil.setUser(context, json.getLong("id"));
+                            } else {
+                                isLoginOK = false;
+                                errorString = json.getString("errMsg");
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(Exception e, String response) {
+
+                    }
+                });
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (isLoginOK) {
+                    Intent intent = new Intent();
+                    intent.setClass(LoginActivity.this, IndexActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                }
+            }
         }
 
         //离线按钮
@@ -119,29 +176,37 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
 
         });
 
-        Context context = this;
         //登录按钮
         bt_login.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View view) {
-                username = edtTxt_userEmail.getText().toString().trim();
+                userEmail = edtTxt_userEmail.getText().toString().trim();
                 password = edtTxt_passwd.getText().toString().trim();
-                if (isRemember_user) {
-                    CommonUtil.setRememberUser(context, edtTxt_userEmail.getText().toString().trim());
-                } else {
-                    CommonUtil.deleteRememberUser(context);
+                loginIn();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                if (isRemember_passwd) {
-                    CommonUtil.setRememberPwd(context, edtTxt_passwd.getText().toString().trim());
+                if (isLoginOK) {
+                    if (isRemember_user) {
+                        CommonUtil.setRememberUser(context, edtTxt_userEmail.getText().toString().trim());
+                    } else {
+                        CommonUtil.deleteRememberUser(context);
+                    }
+                    if (isRemember_passwd) {
+                        CommonUtil.setRememberPwd(context, edtTxt_passwd.getText().toString().trim());
+                    } else {
+                        CommonUtil.deleteRememberPwd(context);
+                    }
+                    Intent intent = new Intent();
+                    intent.setClass(LoginActivity.this, IndexActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
                 } else {
-                    CommonUtil.deleteRememberPwd(context);
+                    Toast.makeText(context, "用户名或密码错误", Toast.LENGTH_SHORT).show();
                 }
-                loginin_socket();
-                Intent intent = new Intent();
-                intent.setClass(LoginActivity.this, IndexActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
             }
 
         });
@@ -181,12 +246,33 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                         tv_verifyText.setBackgroundColor(Color.RED);
                         iv_verify.setImageResource(R.mipmap.ic_unverified);
                     } else {
-
-                        username = edtTxt_userEmail.getText().toString().trim();
+                        userEmail = edtTxt_userEmail.getText().toString().trim();
                         password = edtTxt_passwd.getText().toString().trim();
                         password2 = edtTxt_passwd2.getText().toString().trim();
-                        register_socket();
+                        register_post();
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        if (isRegisterOK) {
+                            CommonUtil.deleteRememberUser(context);
+                            CommonUtil.setRememberUser(context, edtTxt_userEmail.getText().toString().trim());
+                            loginIn();
+                            Intent intent = new Intent();
+                            intent.setClass(LoginActivity.this, IndexActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            tv_verifyText.setText(errorString);
+                            tv_verifyText.setBackgroundColor(Color.RED);
+                            iv_verify.setImageResource(R.mipmap.ic_unverified);
+                        }
                     }
+                } else {
+                    edtTxt_userEmail.setText("");
+                    edtTxt_passwd.setText("");
                 }
                 isRegister = true;
             }
@@ -213,6 +299,16 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                 edtTxt_passwd.setText("");
                 edtTxt_passwd2.setText("");
                 edtTxt_userNickname.setText("");
+                if (CommonUtil.getRememberUser(context) != null) {
+                    isRemember_user = true;
+                    chk_remember_user.setChecked(true);
+                    edtTxt_userEmail.setText(CommonUtil.getRememberUser(context));
+                }
+                if (CommonUtil.getRememberPwd(context) != null) {
+                    isRemember_passwd = true;
+                    chk_remeber_passwd.setChecked(true);
+                    edtTxt_passwd.setText(CommonUtil.getRememberPwd(context));
+                }
             }
 
         });
@@ -227,35 +323,67 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
             //判断用户名是否被占用
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String user = edtTxt_userEmail.getText().toString().trim();Pattern pattern = Pattern.compile("@");
+                String user = edtTxt_userEmail.getText().toString().trim();
+                Pattern pattern = Pattern.compile("@");
                 Pattern pattern1 = Pattern.compile("\\.com");
                 Matcher matcher1 = pattern1.matcher((user));
                 Matcher matcher = pattern.matcher(user);
-                if (!matcher.find()||!matcher1.find()){
+                if (!matcher.find() || !matcher1.find()) {
                     tv_verifyText.setText("请输入正确的邮箱");
                     tv_verifyText.setBackgroundColor(Color.RED);
-                    iv_verify.setImageResource(R.mipmap.ic_verified);
-                }else {
+                    iv_verify.setImageResource(R.mipmap.ic_unverified);
+                } else {
                     tv_verifyText.setText("邮箱地址正确");
                     tv_verifyText.setBackgroundColor(Color.GREEN);
                     iv_verify.setImageResource(R.mipmap.ic_verified);
-                }
 
-                //HttpHelper.get("");
-                if (isVerify != true) {
-                    iv_verify.setImageResource(R.mipmap.ic_unverified);
-                    tv_verifyText.setText("该邮箱已被注册，请重新输入");
-                    tv_verifyText.setBackgroundColor(Color.RED);
-                } else {
-                    tv_verifyText.setText("该邮箱可用");
-                    tv_verifyText.setBackgroundColor(Color.GREEN);
-                    iv_verify.setImageResource(R.mipmap.ic_verified);
+                    userInfo_available();
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if (isVerify != true) {
+                        iv_verify.setImageResource(R.mipmap.ic_unverified);
+                        tv_verifyText.setText(errorString);
+                        tv_verifyText.setBackgroundColor(Color.RED);
+                    } else {
+                        tv_verifyText.setText("该邮箱可用");
+                        tv_verifyText.setBackgroundColor(Color.GREEN);
+                        iv_verify.setImageResource(R.mipmap.ic_verified);
+                    }
                 }
             }
 
             @Override
             public void afterTextChanged(Editable s) {
 
+            }
+        });
+
+        //昵称监听
+        edtTxt_userNickname.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+
+                } else {
+                    userInfo_available();
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if (isVerify != true) {
+                        iv_verify.setImageResource(R.mipmap.ic_unverified);
+                        tv_verifyText.setText(errorString);
+                        tv_verifyText.setBackgroundColor(Color.RED);
+                    } else {
+                        tv_verifyText.setText("该昵称可用");
+                        tv_verifyText.setBackgroundColor(Color.GREEN);
+                        iv_verify.setImageResource(R.mipmap.ic_verified);
+                    }
+                }
             }
         });
 
@@ -282,7 +410,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                         if (passwd.length() >= 6) {
                             isCorrected = true;
                             iv_verify.setImageResource(R.mipmap.ic_verified);
-                            tv_verifyText.setText("该用密码可用");
+                            tv_verifyText.setText("该密码可用");
                             tv_verifyText.setBackgroundColor(Color.GREEN);
                         }
                     }
@@ -317,8 +445,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                             tv_verifyText.setText("该邮箱密码可用");
                             isEqual = true;
                             tv_verifyText.setBackgroundColor(Color.GREEN);
-                        }
-                        else {
+                        } else {
                             tv_verifyText.setText("请输入正确的邮箱");
                             tv_verifyText.setBackgroundColor(Color.RED);
                             iv_verify.setImageResource(R.mipmap.ic_unverified);
@@ -365,13 +492,103 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         }
     }
 
-    // TODO 记得把记录用户名密码的事件实现
-    private void loginin_socket() {
+    //用户登录
+    private void loginIn() {
+        JSONObject jo = new JSONObject();
+        jo.put("email", userEmail);
+        jo.put("password", password);
+        String json = jo.toJSONString();
+        Map<String, String> header = new HashMap<>();
+        MyHttpUtil.post(PublicConfig.url_post_login(), header, json, new MyHttpUtil.HttpCallbackListener() {
+            @Override
+            public void beforeFinish(HttpURLConnection connection) {
+                CommonUtil.setUserCookie(context, connection.getHeaderField("Set-Cookie"));
+            }
 
+            @Override
+            public void onFinish(String response) {
+                if (response != null) {
+                    JSONObject json = JSON.parseObject(response);
+                    if (json.getBoolean("status")) {
+                        isLoginOK = true;
+                        CommonUtil.setUser(context, json.getLong("id"));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Exception e, String response) {
+                Log.d("xxx", "onError e:\n" + e.getMessage() + "\n");
+                Log.d("xxx", "onError response:\n" + response + "\n");
+            }
+        });
     }
 
-    private void register_socket() {
+    //判断邮箱和昵称是否重复
+    private void userInfo_available() {
+        JSONObject jo = new JSONObject();
+        jo.put("email", edtTxt_userEmail.getText().toString().trim());
+        jo.put("nickname", edtTxt_userNickname.getText().toString().trim());
+        String json = jo.toJSONString();
+        Map<String, String> header = new HashMap<>();
+        MyHttpUtil.post(PublicConfig.url_post_register(), header, json, new MyHttpUtil.HttpCallbackListener() {
+            @Override
+            public void beforeFinish(HttpURLConnection connection) {
 
+            }
+
+            @Override
+            public void onFinish(String response) {
+                if (response != null) {
+                    JSONObject json = JSON.parseObject(response);
+                    if (json.getString("errMsg").equals("密码不能为空")) {
+                        isVerify = true;
+                    } else {
+                        isVerify = false;
+                        errorString = json.getString("errMsg");
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Exception e, String response) {
+
+            }
+        });
+    }
+
+    //注册
+    private void register_post() {
+        JSONObject jo = new JSONObject();
+        jo.put("email", edtTxt_userEmail.getText().toString().trim());
+        jo.put("nickname", edtTxt_userNickname.getText().toString().trim());
+        jo.put("password", edtTxt_passwd2.getText().toString().trim());
+        String json = jo.toJSONString();
+        Map<String, String> header = new HashMap<>();
+        MyHttpUtil.post(PublicConfig.url_post_register(), header, json, new MyHttpUtil.HttpCallbackListener() {
+            @Override
+            public void beforeFinish(HttpURLConnection connection) {
+
+            }
+
+            @Override
+            public void onFinish(String response) {
+                if (response != null) {
+                    JSONObject json = JSON.parseObject(response);
+                    if (json.getBoolean("status")) {
+                        isRegisterOK = true;
+                    } else {
+                        isRegisterOK = false;
+                        errorString = json.getString("errMsg");
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Exception e, String response) {
+
+            }
+        });
     }
 
 }

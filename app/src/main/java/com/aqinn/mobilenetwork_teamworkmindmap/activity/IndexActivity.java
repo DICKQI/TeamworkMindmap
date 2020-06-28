@@ -29,6 +29,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.MyRadioButton;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.CreateMindmapDialogFragment;
@@ -173,7 +174,7 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
                         .setAction("Action", null).show();
                 break;
             case R.id.mi_signOut:
-                // TODO 退出登录待写
+                CommonUtil.deleteUserCookie(this);
                 Intent intent = new Intent();
                 intent.setClass(this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

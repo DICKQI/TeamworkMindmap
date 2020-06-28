@@ -126,7 +126,6 @@ public class MyHttpUtil {
                     isError = connection.getErrorStream();
                     if (isError==null)
                         is = connection.getInputStream();
-                    Log.d("respond", isError.toString());
                     if (responseCode == 200) {
                         //请求成功 获得返回的流
                         if (listener != null) {
@@ -188,7 +187,6 @@ public class MyHttpUtil {
                     isError = connection.getErrorStream();
                     if (isError==null)
                         is = connection.getInputStream();
-                    Log.d("respond", isError.toString());
                     if (responseCode == 200) {
                         //请求成功 获得返回的流
                         if (listener != null) {
@@ -258,7 +256,6 @@ public class MyHttpUtil {
                     isError = connection.getErrorStream();
                     if (isError==null)
                         is = connection.getInputStream();
-                    Log.d("respond", isError.toString());
                     if (responseCode == 200) {
                         //请求成功 获得返回的流
                         if (listener != null) {

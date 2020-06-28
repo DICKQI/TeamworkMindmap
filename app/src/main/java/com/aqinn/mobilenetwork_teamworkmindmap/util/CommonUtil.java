@@ -119,4 +119,15 @@ public class CommonUtil {
         edit.remove("twmm_remember_pwd");
         edit.commit();
     }
+
+    /**
+     * 删除用户cookie
+     * @param context
+     */
+    public static void deleteUserCookie(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences("TWMMCache", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = preferences.edit();
+        edit.remove("twmm_user_cookie");
+        edit.commit();
+    }
 }
