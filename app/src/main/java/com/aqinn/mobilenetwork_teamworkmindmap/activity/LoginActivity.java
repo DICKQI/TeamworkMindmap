@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -33,6 +34,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.http.MyHttpPost;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
+import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.MyFragment;
 
 import java.net.HttpURLConnection;
 import java.util.HashMap;
@@ -336,11 +338,11 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                     iv_verify.setImageResource(R.mipmap.ic_verified);
 
                     userInfo_available();
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        Thread.sleep(500);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
                     if (isVerify != true) {
                         iv_verify.setImageResource(R.mipmap.ic_unverified);
                         tv_verifyText.setText(errorString);
@@ -367,11 +369,11 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
 
                 } else {
                     userInfo_available();
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        Thread.sleep(500);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
                     if (isVerify != true) {
                         iv_verify.setImageResource(R.mipmap.ic_unverified);
                         tv_verifyText.setText(errorString);
@@ -529,6 +531,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         jo.put("nickname", edtTxt_userNickname.getText().toString().trim());
         String json = jo.toJSONString();
         Map<String, String> header = new HashMap<>();
+        Handler mHandler = new Handler();
         MyHttpUtil.post(PublicConfig.url_post_register(), header, json, new MyHttpUtil.HttpCallbackListener() {
             @Override
             public void beforeFinish(HttpURLConnection connection) {
@@ -539,12 +542,26 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
             public void onFinish(String response) {
                 if (response != null) {
                     JSONObject json = JSON.parseObject(response);
-                    if (json.getString("errMsg").equals("密码不能为空")) {
-                        isVerify = true;
-                    } else {
-                        isVerify = false;
-                        errorString = json.getString("errMsg");
-                    }
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (json.getString("errMsg").equals("密码不能为空")) {
+                                isVerify = true;
+                            } else {
+                                isVerify = false;
+                                errorString = json.getString("errMsg");
+                            }
+                            if (isVerify != true) {
+                                iv_verify.setImageResource(R.mipmap.ic_unverified);
+                                tv_verifyText.setText(errorString);
+                                tv_verifyText.setBackgroundColor(Color.RED);
+                            } else {
+                                tv_verifyText.setText("该邮箱可用");
+                                tv_verifyText.setBackgroundColor(Color.GREEN);
+                                iv_verify.setImageResource(R.mipmap.ic_verified);
+                            }
+                        }
+                    });
                 }
             }
 
