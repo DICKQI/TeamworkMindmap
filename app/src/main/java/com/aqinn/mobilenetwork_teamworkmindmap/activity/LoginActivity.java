@@ -82,11 +82,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         /**
          * TODO 获得写文件权限，暂时先写在这里
          */
-        int checkWriteExternalStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (checkWriteExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
-            //如果没有权限则获取权限 requestCode在后面回调中会用到
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 3);
-        }
+        CommonUtil.verifyStoragePermissions(this);
         fileUtil.createAppDirectory();
 
 
@@ -168,6 +164,8 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         bt_offLine.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View view) {
+                CommonUtil.setUser(getParent(), -1L);
+                CommonUtil.setUserCookie(getParent(), "");
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, IndexActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

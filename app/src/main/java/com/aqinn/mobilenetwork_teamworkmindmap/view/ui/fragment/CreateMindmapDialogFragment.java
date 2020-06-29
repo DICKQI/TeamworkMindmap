@@ -88,14 +88,9 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
                 dismiss();
                 break;
             case R.id.bt_confirm:
-                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    //申请WRITE_EXTERNAL_STORAGE权限
-                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            3);
-                }
                 Long userId = CommonUtil.getUser(getActivity());
-                Mindmap mm = mmm.createMindmap(userId, userId, et_name.getText().toString());
+                CommonUtil.verifyStoragePermissions(getActivity());
+                Mindmap mm = mmm.createMindmap(userId, userId, et_name.getText().toString(), true);
                 if (mm == null) {
                     Snackbar.make(getView(), "创建失败", Snackbar.LENGTH_SHORT)
                             .setAction("Action", null).show();

@@ -55,6 +55,15 @@ public class MindMapManager {
     }
 
     /**
+     * 根据mmId查询本导图是否现在线用户创建的
+     * @param mmId
+     * @return
+     */
+    public boolean queryIsMeByMmId(Long mmId) {
+        return DBUtil.queryIsMeByMmId(mmId);
+    }
+
+    /**
      * 随机生成唯一的nodeId
      * @param mmId TODO 这个参数暂时是多余的，因为本来是想着在这个方法里去请求后台，
      *              但是介于更新UI等问题，现选择把该方法当做关协作情况下的专用生成nodeId方法
@@ -223,7 +232,7 @@ public class MindMapManager {
      * @param name
      * @return
      */
-    public Mindmap createMindmap(Long userId, Long ownerId, String name) {
+    public Mindmap createMindmap(Long userId, Long ownerId, String name, boolean isMe) {
         Mindmap mm = new Mindmap(name);
         mm.setPwd("");
         mm.setShareId(-1L);
@@ -238,7 +247,7 @@ public class MindMapManager {
         mm.setTm(tree);
         long res1 = DBUtil.insertMindmap(mm);
         Log.d(TAG, "mmm创建思维导图时存入tb_mindmap的操作结果 => " + res1);
-        long res2 = DBUtil.insertUserOwnMindmap(userId, mm.getMmId());
+        long res2 = DBUtil.insertUserOwnMindmap(userId, mm.getMmId(), isMe);
         boolean flag = saveMindmap(mm);
         if (!flag || res1 == -1L || res2 == -1)
             return null;
@@ -366,24 +375,9 @@ public class MindMapManager {
         return json2tm(res);
     }
 
-    /*
-     * 1.上传本地版本并获取shareId
-     * 2.根据shareId获取云端版本
-     */
+
     public Long uploadLocalVersionTreeModel() {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                MyHttpPost post = new MyHttpPost("科科的URL");
-                Map<String, String> params = new HashMap<>();
-                params.put("treeModel", "???");
-                RespMsg msg = post.req(params);
-                final String respCodeMsg = msg.getRespCodeMsg();
-                final String respBody = msg.getRespBody();
-            }
-        });
-        t.start();
-        return 0L;
+        return null;
     }
 
     /**
@@ -393,8 +387,8 @@ public class MindMapManager {
      * @param ownerId
      * @return
      */
-    public Long insertUserOwnMindmap(Long userId, Long mmId, Long ownerId) {
-        return DBUtil.insertUserOwnMindmap(userId, mmId);
+    public Long insertUserOwnMindmap(Long userId, Long mmId, Long ownerId, boolean isMe) {
+        return DBUtil.insertUserOwnMindmap(userId, mmId, isMe);
     }
 
     /**

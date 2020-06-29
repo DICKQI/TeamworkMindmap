@@ -95,10 +95,12 @@ public class IndexFragment extends Fragment {
                 } else {
                     Mindmap mm = mindmaps.get(position);
                     if (position != 0) { // 改变此条件可以实现测试效果 position == 1
+                        boolean isMe = mmm.queryIsMeByMmId(mm.getMmId());
                         Intent intent = new Intent(getActivity(), MindmapActivity.class);
                         Bundle bundle = new Bundle();
                         bundle.putLong("mmId", mm.getMmId());
                         bundle.putString("name", mm.getName());
+                        bundle.putBoolean("isMe", isMe);
                         intent.putExtras(bundle);
                         startActivity(intent);
                     }

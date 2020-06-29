@@ -66,6 +66,11 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     // 基本
     private String name;
     private Long mmId;
+    private boolean isMe = true;
+    private boolean enable = false;
+    private boolean db_shareOn = false;
+    private boolean http_shareOn = false;
+    private Long shareId = -1L;
 
     //其它
     private static final String TAG = "MindmapActivity";
@@ -84,19 +89,17 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mindmap);
 
-        int checkWriteExternalStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (checkWriteExternalStoragePermission != PackageManager.PERMISSION_GRANTED) {
-            //如果没有权限则获取权限 requestCode在后面回调中会用到
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 3);
-        }
+        CommonUtil.verifyStoragePermissions(this);
 
         try {
             Bundle bundle = getIntent().getExtras();
             name = bundle.getString("name");
             mmId = bundle.getLong("mmId");
+            isMe = bundle.getBoolean("isMe");
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+
 
         initAllView();
 
@@ -117,12 +120,83 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                 treev_mainTreeView.focusMidLocation();
             }
         }).start();
+
+
+        verifyEnable();
+
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         mmm.saveTree(mmId, treev_mainTreeView.getTreeModel());
+    }
+
+    private boolean verifyEnable() {
+        /*
+        TODO
+         1. 两方面（本地数据库 和 网络）查询 该导图有没有开共享
+         2.     如果 开，able=T
+                如果 关，图是自己的话，able=T
+                如果 关，图是他人的话，able=F
+                如果请求出问题，图是自己的话，开，able=F
+                如果请求出问题，图是自己的话，关，able=T
+                如果请求出问题，图是他人的话，able=F
+         */
+        Mindmap db_mm = mmm.getMindmapByMmId(mmId);
+        shareId = db_mm.getShareId();
+        db_shareOn = db_mm.getShareOn() == 0 ? false : true;
+        http_shareOn = false;
+        Map<String, String> header = new HashMap<>();
+        header.put("Cookie", CommonUtil.getUserCookie(this));
+        header.put("Content-Type", "application/json");
+        MyHttpUtil.get(PublicConfig.url_get_getMindmapDetail(shareId), header, new MyHttpUtil.HttpCallbackListener() {
+            @Override
+            public void beforeFinish(HttpURLConnection connection) {
+
+            }
+
+            @Override
+            public void onFinish(String response) {
+                JSONObject jo = JSONObject.parseObject(response);
+                if (jo.getBoolean("status") == true) {
+                    http_shareOn = true;
+                    Log.d(TAG, "onFinish: 网络通畅, 目前是开协作模式");
+                    enable = true;
+                } else {
+                    Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
+                    if ("导图未开启共享".equals(jo.getString("errMsg"))) {
+                        Log.d(TAG, "onFinish: 网络通畅, 目前是关协作模式");
+                        if (isMe) {
+                            enable = true;
+                        } else {
+                            enable = false;
+                        }
+                    } else {
+                        Log.d(TAG, "onFinish: 网络通畅, 但是请求出问题 response => " + response);
+                        if (isMe && db_shareOn)
+                            enable = false;
+                        if (isMe && !db_shareOn)
+                            enable = true;
+                        if (!isMe)
+                            enable = false;
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Exception e, String response) {
+                e.printStackTrace();
+                Log.d(TAG, "onFinish: 网络阻塞 response => " + response);
+                if (isMe && db_shareOn)
+                    enable = false;
+                if (isMe && !db_shareOn)
+                    enable = true;
+                if (!isMe)
+                    enable = false;
+            }
+        });
+        return enable;
     }
 
     private void initTreeModel() {
@@ -163,6 +237,12 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void showEdit(String title, String content, int status) {
+        verifyEnable();
+        if (!enable) {
+            Snackbar.make(treev_mainTreeView, "目前是只读状态", Snackbar.LENGTH_SHORT)
+                    .setAction("Action", null).show();
+            return;
+        }
         mm = mmm.getMindmapByMmId(mmId);
         final EditMindnodeDialogFragment emdf = new EditMindnodeDialogFragment(title, content, status);
         emdf.setOnEditFragmentListener((String mnContent) -> {
@@ -511,5 +591,6 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         }
         return true;
     }
+
 
 }

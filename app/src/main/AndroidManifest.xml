@@ -11,7 +11,8 @@
         android:roundIcon="@drawable/app_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:name=".MyApplication">
+        android:name=".MyApplication"
+        android:requestLegacyExternalStorage="true">
         <activity android:name=".activity.IndexActivity"
             android:launchMode="singleTask">
 

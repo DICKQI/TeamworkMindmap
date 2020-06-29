@@ -38,11 +38,24 @@ public class DBUtil {
         dbHelper = MyApplication.dbHelper;
     }
 
-    public static long insertUserOwnMindmap(Long userId, Long mmId) {
+    public static boolean queryIsMeByMmId(Long mmId) {
+        db = dbHelper.getReadableDatabase();
+        cursor = db.rawQuery("SELECT * FROM tb_user_own_mindmap WHERE mm_id=" + mmId, null);
+        int isMe = 1;
+        while (cursor.moveToNext()) {
+            isMe = Integer.parseInt(cursor.getString(cursor.getColumnIndex("is_me")));
+        }
+        cursor.close();
+        db.close();
+        return isMe == 1 ? true : false;
+    }
+
+    public static long insertUserOwnMindmap(Long userId, Long mmId, boolean isMe) {
         db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("user_id", userId);
         values.put("mm_id", mmId);
+        values.put("is_me", isMe ? 1 : 0);
         long res = db.insert("tb_user_own_mindmap", null, values);
         if (res == -1)
             Log.d("xxx", "插入失败");
