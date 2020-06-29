@@ -156,8 +156,28 @@ public class PublicConfig {
         return "http://49.234.71.210/user/dashboard/";
     }
 
+    /**
+     * 更改个人信息
+     * @return
+     */
     public static final String url_put_dashboard() {
         return "http://49.234.71.210/user/dashboard/";
+    }
+
+    /**
+     * 获取头像
+     * @return
+     */
+    public static final String url_get_head() {
+        return "http://49.234.71.210/user/head/";
+    }
+
+    /**
+     * 更新头像
+     * @return
+     */
+    public static final String url_put_head() {
+        return "http://49.234.71.210/user/head/";
     }
 
 }

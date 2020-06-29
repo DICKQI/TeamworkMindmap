@@ -182,42 +182,46 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
                 Map<String, String> update_header = new HashMap<>();
                 update_header.put("Cookie", CommonUtil.getUserCookie(this));
                 com.alibaba.fastjson.JSONObject jo = new JSONObject();
-                jo.put("nickname", MyFragment.edtTxt_nickname.getText().toString().trim());
-                if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderMan)
-                    sex = "男";
-                else if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderFemale)
-                    sex = "女";
-                else
-                    sex = "保密";
-                jo.put("sex", sex);
-                jo.put("signature", MyFragment.edtTxt_signature.getText().toString().trim());
-                Handler mHandler = new Handler();
-                MyHttpUtil.put(PublicConfig.url_put_dashboard(), update_header, jo.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
-                    @Override
-                    public void beforeFinish(HttpURLConnection connection) {
+                if (MyFragment.edtTxt_nickname.getText().toString().trim().equals(""))
+                    Toast.makeText(context, "请输入昵称", Toast.LENGTH_SHORT).show();
+                else {
+                    jo.put("nickname", MyFragment.edtTxt_nickname.getText().toString().trim());
+                    if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderMan)
+                        sex = "男";
+                    else if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderFemale)
+                        sex = "女";
+                    else
+                        sex = "保密";
+                    jo.put("sex", sex);
+                    jo.put("signature", MyFragment.edtTxt_signature.getText().toString().trim());
+                    Handler mHandler = new Handler();
+                    MyHttpUtil.put(PublicConfig.url_put_dashboard(), update_header, jo.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
+                        @Override
+                        public void beforeFinish(HttpURLConnection connection) {
 
-                    }
+                        }
 
-                    @Override
-                    public void onFinish(String response) {
-                        JSONObject json = JSON.parseObject(response);
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (json.getBoolean("status")) {
-                                    Toast.makeText(context, "更改成功", Toast.LENGTH_SHORT).show();
-                                } else {
+                        @Override
+                        public void onFinish(String response) {
+                            JSONObject json = JSON.parseObject(response);
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (json.getBoolean("status")) {
+                                        Toast.makeText(context, "更改成功", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                    }
                                 }
-                            }
-                        });
+                            });
 
-                    }
+                        }
 
-                    @Override
-                    public void onError(Exception e, String response) {
+                        @Override
+                        public void onError(Exception e, String response) {
 
-                    }
-                });
+                        }
+                    });
+                }
                 if (MyFragment.edtTxt_oldPasswd.getText().toString().trim().length() > 5 && MyFragment.edtTxt_newPasswd.getText().toString().trim().length() > 5) {
                     Pattern pattern = Pattern.compile("([a-z]|[A-Z])*");
                     Pattern pattern1 = Pattern.compile("[0-9]*");
