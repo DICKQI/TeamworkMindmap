@@ -164,7 +164,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         bt_offLine.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View view) {
-                CommonUtil.setUser(context, -1L);
+                CommonUtil.setUser(getParent(), -1L);
                 CommonUtil.deleteUserCookie(context);
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, IndexActivity.class);
@@ -399,7 +399,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                 Pattern pattern1 = Pattern.compile("[0-9]*");
                 Matcher matcher = pattern.matcher(passwd);
                 Matcher matcher1 = pattern1.matcher((passwd));
-                tv_verifyText.setText("请输入正确的密码（包含字母和数字,6位以上）");
+                tv_verifyText.setText("请输入正确的密码（包含字母和数字,6位或以上）");
                 tv_verifyText.setBackgroundColor(Color.RED);
                 iv_verify.setImageResource(R.mipmap.ic_unverified);
                 isCorrected = false;

@@ -2,10 +2,12 @@ package com.aqinn.mobilenetwork_teamworkmindmap.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PersistableBundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,6 +18,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -29,9 +32,13 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.MyRadioButton;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.CreateMindmapDialogFragment;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.FindMindmapDialogFragment;
@@ -40,8 +47,15 @@ import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.MyFragment;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.ShareMindmapDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.json.JSONException;
+
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Aqinn
@@ -65,6 +79,8 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
     private MyOnCheckedChangeListener myOnCheckedChangeListener;
     private boolean optionMenuOn = false;  //标示是否要显示optionmenu
     private Menu mMenu;
+    private String sex = "保密";
+    private Context context = this;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,9 +120,11 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
         vp_main.addOnPageChangeListener(myPageChangeListener);
         rg_main.setOnCheckedChangeListener(myOnCheckedChangeListener);
         iv_cloud.setOnClickListener(this);
+
+//        MyFragment.rdoGp_gender.setOnCheckedChangeListener(radioGrouplisten);
     }
 
-    private void setRadioButton(int drawableId, RadioButton radioButton){
+    private void setRadioButton(int drawableId, RadioButton radioButton) {
         //定义底部标签图片大小和位置
         Drawable drawable = getResources().getDrawable(drawableId);
         //当这个图片被绘制时，给他绑定一个矩形 ltrb规定这个矩形
@@ -122,15 +140,15 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
         return super.onPrepareOptionsMenu(menu);
     }
 
-    private void checkOptionMenu(){
-        if(null != mMenu){
-            if(optionMenuOn){
-                for (int i = 0; i < mMenu.size(); i++){
+    private void checkOptionMenu() {
+        if (null != mMenu) {
+            if (optionMenuOn) {
+                for (int i = 0; i < mMenu.size(); i++) {
                     mMenu.getItem(i).setVisible(true);
                     mMenu.getItem(i).setEnabled(true);
                 }
             } else {
-                for (int i = 0; i < mMenu.size(); i++){
+                for (int i = 0; i < mMenu.size(); i++) {
                     mMenu.getItem(i).setVisible(false);
                     mMenu.getItem(i).setEnabled(false);
                 }
@@ -159,16 +177,118 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.mi_update:
-                Snackbar.make(root, "更新功能敬请期待", Snackbar.LENGTH_SHORT)
-                        .setAction("Action", null).show();
+                Map<String, String> update_header = new HashMap<>();
+                update_header.put("Cookie", CommonUtil.getUserCookie(this));
+                com.alibaba.fastjson.JSONObject jo = new JSONObject();
+                jo.put("nickname", MyFragment.edtTxt_nickname.getText().toString().trim());
+                if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderMan)
+                    sex = "男";
+                else if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderFemale)
+                    sex = "女";
+                else
+                    sex = "保密";
+                jo.put("sex", sex);
+                jo.put("signature", MyFragment.edtTxt_signature.getText().toString().trim());
+                Handler mHandler = new Handler();
+                MyHttpUtil.put(PublicConfig.url_put_dashboard(), update_header, jo.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
+                    @Override
+                    public void beforeFinish(HttpURLConnection connection) {
+
+                    }
+
+                    @Override
+                    public void onFinish(String response) {
+                        JSONObject json = JSON.parseObject(response);
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (json.getBoolean("status")) {
+                                    Toast.makeText(context, "更改成功", Toast.LENGTH_SHORT).show();
+                                } else {
+                                }
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onError(Exception e, String response) {
+
+                    }
+                });
+                if (MyFragment.edtTxt_oldPasswd.getText().toString().trim().length() > 5 && MyFragment.edtTxt_newPasswd.getText().toString().trim().length() > 5) {
+                    Pattern pattern = Pattern.compile("([a-z]|[A-Z])*");
+                    Pattern pattern1 = Pattern.compile("[0-9]*");
+                    Matcher matcher = pattern.matcher(MyFragment.edtTxt_newPasswd.getText().toString().trim());
+                    Matcher matcher1 = pattern1.matcher((MyFragment.edtTxt_newPasswd.getText().toString().trim()));
+                    if (matcher.find()) {
+                        if (matcher1.find()) {
+                            Map<String, String> password_header = new HashMap<>();
+                            password_header.put("Cookie", CommonUtil.getUserCookie(this));
+                            com.alibaba.fastjson.JSONObject json = new JSONObject();
+                            json.put("oldPassword", MyFragment.edtTxt_oldPasswd.getText().toString().trim());
+                            json.put("newPassword", MyFragment.edtTxt_newPasswd.getText().toString().trim());
+                            Handler mHandler2 = new Handler();
+                            MyHttpUtil.post(PublicConfig.url_put_dashboard(), password_header, json.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
+                                @Override
+                                public void beforeFinish(HttpURLConnection connection) {
+
+                                }
+
+                                @Override
+                                public void onFinish(String response) {
+                                    JSONObject json = JSON.parseObject(response);
+                                    mHandler2.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (json.getBoolean("status")) {
+                                                Toast.makeText(context, "更改密码成功", Toast.LENGTH_SHORT).show();
+                                                MyFragment.edtTxt_newPasswd.setText("");
+                                                MyFragment.edtTxt_oldPasswd.setText("");
+                                            } else
+                                                Toast.makeText(context, "更改密码失败", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+
+                                }
+
+                                @Override
+                                public void onError(Exception e, String response) {
+
+                                }
+                            });
+                        } else
+                            Toast.makeText(context, "请输入正确的密码（包含字母和数字,6位或以上）", Toast.LENGTH_SHORT).show();
+                    } else
+                        Toast.makeText(context, "请输入正确的密码（包含字母和数字,6位或以上）", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.mi_setting:
                 Snackbar.make(root, "前往设置页面功能敬请期待", Snackbar.LENGTH_SHORT)
                         .setAction("Action", null).show();
                 break;
             case R.id.mi_signOut:
+                if (CommonUtil.getUserCookie(this) != null) {
+                    Map<String, String> header = new HashMap<>();
+                    header.put("Cookie", CommonUtil.getUserCookie(this));
+                    MyHttpUtil.delete(PublicConfig.url_delete_logout(), header, new MyHttpUtil.HttpCallbackListener() {
+                        @Override
+                        public void beforeFinish(HttpURLConnection connection) {
+
+                        }
+
+                        @Override
+                        public void onFinish(String response) {
+                        }
+
+                        @Override
+                        public void onError(Exception e, String response) {
+
+                        }
+                    });
+                }
                 CommonUtil.deleteUserCookie(this);
                 Intent intent = new Intent();
                 intent.setClass(this, LoginActivity.class);
@@ -182,13 +302,34 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
         return super.onOptionsItemSelected(item);
     }
 
+    RadioGroup.OnCheckedChangeListener radioGrouplisten = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+            int id = group.getCheckedRadioButtonId();
+            switch (group.getCheckedRadioButtonId()) {
+                case R.id.my_rdo_genderMan:
+                    sex = "男";
+                    break;
+                case R.id.my_rdo_genderFemale:
+                    sex = "女";
+                    break;
+                case R.id.my_rdo_genderPrivate:
+                    sex = "保密";
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         vp_main.removeOnPageChangeListener(myPageChangeListener);
     }
 
-    class MyPageChangeListener implements ViewPager.OnPageChangeListener{
+    class MyPageChangeListener implements ViewPager.OnPageChangeListener {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -215,7 +356,7 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    class MyOnCheckedChangeListener implements RadioGroup.OnCheckedChangeListener{
+    class MyOnCheckedChangeListener implements RadioGroup.OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(RadioGroup group, int checkedId) {
             for (int i = 0; i < group.getChildCount(); i++) {
@@ -244,10 +385,12 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
             super(fm);
             this.mList = list;
         }
+
         @Override
         public Fragment getItem(int position) {
             return this.mList == null ? null : this.mList.get(position);
         }
+
         @Override
         public int getCount() {
             return this.mList == null ? 0 : this.mList.size();

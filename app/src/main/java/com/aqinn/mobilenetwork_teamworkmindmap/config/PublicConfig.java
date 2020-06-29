@@ -140,6 +140,24 @@ public class PublicConfig {
         return "http://49.234.71.210/user/register/";
     }
 
+    /**
+     * 获取用户信息
+     * @return
+     */
+    public static final String url_get_dashboard() {
+        return "http://49.234.71.210/user/dashboard/";
+    }
 
+    /**
+     * 更改密码
+     * @return
+     */
+    public static final String url_post_dashboard() {
+        return "http://49.234.71.210/user/dashboard/";
+    }
+
+    public static final String url_put_dashboard() {
+        return "http://49.234.71.210/user/dashboard/";
+    }
 
 }

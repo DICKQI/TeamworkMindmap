@@ -64,7 +64,8 @@
             <EditText
                 android:id="@+id/my_account"
                 android:layout_width="220dp"
-                android:layout_height="40dp" />
+                android:layout_height="40dp"
+                android:focusable="false"/>
         </LinearLayout>
 
         <LinearLayout
@@ -77,11 +78,30 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="密码:      "
+                android:text="原密码:   "
                 android:textSize="19dp" />
 
             <EditText
-                android:id="@+id/my_password"
+                android:id="@+id/my_oldPassword"
+                android:layout_width="220dp"
+                android:layout_height="40dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_below="@+id/my_line1"
+            android:layout_marginTop="115dp"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="新密码:   "
+                android:textSize="19dp" />
+
+            <EditText
+                android:id="@+id/my_newPassword"
                 android:layout_width="220dp"
                 android:layout_height="40dp" />
         </LinearLayout>
@@ -91,7 +111,7 @@
             android:layout_width="309dp"
             android:layout_height="1dp"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="340dp"
+            android:layout_marginTop="395dp"
             android:background="#267BA5" />
 
         <TextView
@@ -176,13 +196,14 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="邮箱:       "
+                android:text="注册日期: "
                 android:textSize="19dp" />
 
             <EditText
-                android:id="@+id/my_email"
-                android:layout_width="220dp"
-                android:layout_height="40dp" />
+                android:id="@+id/my_date"
+                android:layout_width="210dp"
+                android:layout_height="40dp"
+                android:focusable="false"/>
         </LinearLayout>
 
     </RelativeLayout>
