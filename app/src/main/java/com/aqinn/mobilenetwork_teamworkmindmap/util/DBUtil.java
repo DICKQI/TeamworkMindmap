@@ -137,10 +137,10 @@ public class DBUtil {
         values.put("pwd", mm.getPwd());
         long res = db.insert("tb_mindmap", null, values);
         if (res == -1)
-            Log.d("xxx", "插入失败");
+            Log.d(TAG, "插入失败");
         else
-            Log.d("xxx", "插入成功");
-        Log.d("xxx", mm.toString());
+            Log.d(TAG, "插入成功");
+        Log.d(TAG, mm.toString());
         db.close();
         return res;
     }

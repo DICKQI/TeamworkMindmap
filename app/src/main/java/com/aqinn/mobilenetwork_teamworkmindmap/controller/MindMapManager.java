@@ -38,6 +38,7 @@ public class MindMapManager {
     private FileUtil fileUtil = FileUtil.getInstance();
     // json转tw的中间变量
     private JSONArray tmsja = new JSONArray();
+    private static final String TAG = "MindMapManager";
 
     /***********
      * 单例模式 *
@@ -225,7 +226,7 @@ public class MindMapManager {
     public Mindmap createMindmap(Long userId, Long ownerId, String name) {
         Mindmap mm = new Mindmap(name);
         mm.setPwd("");
-        mm.setShareId(null);
+        mm.setShareId(-1L);
         mm.setShareOn(0);
         mm.setMmId(System.currentTimeMillis());
         mm.setOwnerId(ownerId);
@@ -236,11 +237,12 @@ public class MindMapManager {
         tree.addNode(teamwork_mindmap);
         mm.setTm(tree);
         long res1 = DBUtil.insertMindmap(mm);
+        Log.d(TAG, "mmm创建思维导图时存入tb_mindmap的操作结果 => " + res1);
         long res2 = DBUtil.insertUserOwnMindmap(userId, mm.getMmId());
         boolean flag = saveMindmap(mm);
-        if (!flag)
+        if (!flag || res1 == -1L || res2 == -1)
             return null;
-        Log.d("xxx", "create");
+        Log.d(TAG, "思维导图创建成功");
         return mm;
     }
 

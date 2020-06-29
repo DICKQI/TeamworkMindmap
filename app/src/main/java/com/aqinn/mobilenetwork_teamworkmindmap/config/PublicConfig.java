@@ -13,6 +13,19 @@ public class PublicConfig {
     public static final String CONTENT_LOCATION = "twmm_content/";
     public static final String CONFIG_FILE = "conf.txt";
 
+    public static final String url_delete_closeShare(Long shareId) {
+        return "http://49.234.71.210/map/close/" + shareId + "/";
+    }
+
+    /**
+     * 删除在线导图
+     * @param shareId
+     * @return
+     */
+    public static final String url_delete_deleteMindmap(Long shareId) {
+        return "http://49.234.71.210/map/" + shareId + "/";
+    }
+
     /**
      * 加入导图协作
      *

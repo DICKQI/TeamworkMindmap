@@ -7,12 +7,14 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AbsoluteLayout;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -33,6 +35,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.util.DBUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -47,6 +50,7 @@ import java.util.Map;
 public class ShareMindmapDialogFragment extends DialogFragment implements View.OnClickListener {
 
     // 组件
+    private AbsoluteLayout al_share;
     private EditText et_share_id, et_pwd;
     private ImageView iv_share_or_not;
 
@@ -55,6 +59,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
     public static Dialog dialog;
     private MindMapManager mmm = MindMapManager.getInstance();
     private FileUtil fileUtil = FileUtil.getInstance();
+    private Handler mHandler = new Handler();
     private Long mmId;
     private String name;
     private boolean shareOrNot;
@@ -97,13 +102,48 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.iv_share_or_not:
+                // TODO 检查网络是否通畅 然后 break
                 // 在此开/关协助 即 共享思维导图 上传到云端
                 if (shareOrNot) {
-                    // TODO 目前是开共享状态的，点击后会变关，等科科的后台：关协助
-                    iv_share_or_not.setImageDrawable(share_mm_blue);
-                    et_share_id.setText("");
+                    Map<String, String> header = new HashMap<>();
+                    header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
+                    header.put("Content-Type", "application/json");
+                    MyHttpUtil.delete(PublicConfig.url_delete_closeShare(shareId), header, new MyHttpUtil.HttpCallbackListener() {
+                        @Override
+                        public void beforeFinish(HttpURLConnection connection) {
+
+                        }
+
+                        @Override
+                        public void onFinish(String response) {
+                            JSONObject jo = JSONObject.parseObject(response);
+                            if (jo.getBoolean("status") == true) {
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (mmm.mindmapShareOff(mmId) < 1) {
+                                            Log.d(TAG, "onFinish: 云端导图协作关闭成功, 本地导图共享状态改变失败");
+                                            return;
+                                        }
+                                        iv_share_or_not.setImageDrawable(share_mm_blue);
+                                        et_share_id.setText("");
+                                    }
+                                });
+                                Log.d(TAG, "onFinish: 关闭导图成功 => " + response);
+                            } else {
+                                Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
+                                Log.d(TAG, "onFinish: 关闭协作失败 response => " + response);
+                            }
+                        }
+
+                        @Override
+                        public void onError(Exception e, String response) {
+                            e.printStackTrace();
+                            Log.d(TAG, "onFinish: 关闭协作失败 response => " + response);
+                        }
+                    });
                 } else {
-                    if (shareId != -1L) {
+                    if (shareId == -1L) {
                         // 思维导图第一次共享的情况 即 后台数据库还没给本导图ShareId
                         Map<String, String> header = new HashMap<>();
                         header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
@@ -122,7 +162,6 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                         jo.put("password", et_pwd.getText().toString());
                         String jsonTree = mmm.tm2json(tree);
                         jo.put("node", JSONArray.parseArray(jsonTree));
-                        System.out.println(jo.toJSONString());
                         MyHttpUtil.post(PublicConfig.url_post_firstShareOn(), header, jo.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
                             @Override
                             public void beforeFinish(HttpURLConnection connection) {
@@ -146,13 +185,12 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                 } else {
                                     Log.d(TAG, "第一次分享思维导图网络请求完成，本地数据库存储未完成");
                                 }
-
                             }
 
                             @Override
                             public void onError(Exception e, String response) {
                                 e.printStackTrace();
-                                System.out.println("response => " + response);
+                                Log.d(TAG, "onError: 第一次分享导图请求失败, response => " + response);
                             }
                         });
                     } else { // 非第一次共享该思维导图的情况 即 后台数据库已经有了本导图的ShareId
@@ -174,7 +212,6 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
 //                        jo.put("password", et_pwd.getText().toString());
                         String jsonTree = mmm.tm2json(tree);
                         jo.put("node", JSONArray.parseArray(jsonTree));
-                        System.out.println(jo.toJSONString());
                         MyHttpUtil.put(PublicConfig.url_put_shareOnAgain(shareId), header, jo.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
                             @Override
                             public void beforeFinish(HttpURLConnection connection) {
@@ -191,17 +228,18 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                 // TODO 记得把userId用起来 要是用不到的话 就把这句话删了
                                 if (mmm.mindmapShareOn(mmId) >= 1) {
                                     shareOrNot = true;
+                                    iv_share_or_not.setImageDrawable(share_cancel);
+                                    et_share_id.setText(String.valueOf(shareId));
                                     Log.d(TAG, "非第一次分享思维导图网络请求成功");
                                 } else {
                                     Log.d(TAG, "非第一次分享思维导图网络请求完成，本地数据库存储未完成");
                                 }
 
                             }
-
                             @Override
                             public void onError(Exception e, String response) {
                                 e.printStackTrace();
-                                Log.d(TAG, "onError: " + response);
+                                Log.d(TAG, "onError: 非第一次分享导图请求失败, response => " + response);
                             }
                         });
                     }
@@ -211,6 +249,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
     }
 
     private void initAllView(View v_sm) {
+        al_share = v_sm.findViewById(R.id.al_share);
         et_share_id = v_sm.findViewById(R.id.et_share_id);
         et_pwd = v_sm.findViewById(R.id.et_pwd);
         iv_share_or_not = v_sm.findViewById(R.id.iv_share_or_not);

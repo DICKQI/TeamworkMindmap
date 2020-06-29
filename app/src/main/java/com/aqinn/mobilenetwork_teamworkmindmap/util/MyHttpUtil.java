@@ -20,6 +20,8 @@ import java.util.Map;
  */
 public class MyHttpUtil {
 
+    private static final String TAG = "MyHttpUtil";
+
     /**
      * Post请求
      *
@@ -68,6 +70,7 @@ public class MyHttpUtil {
                         }
                     } else {
                         //请求失败
+                        Log.d(TAG, "请求方法: POST, URL: " + address + ", 状态码: " + responseCode);
                         throw new Exception("POST请求失败,响应码:" + responseCode);
                     }
 //                    // 得到服务器返回数据
@@ -141,6 +144,7 @@ public class MyHttpUtil {
                         }
                     } else {
                         //请求失败
+                        Log.d(TAG, "请求方法: GET, URL: " + address + ", 状态码: " + responseCode);
                         throw new Exception("GET请求失败,状态码:" + responseCode);
                     }
                 } catch (Exception e) {
@@ -206,7 +210,7 @@ public class MyHttpUtil {
                         }
                     } else {
                         //请求失败
-                        Log.d("xxx", "状态码:" + responseCode);
+                        Log.d(TAG, "请求方法: PUT, URL: " + address + ", 状态码: " + responseCode);
                         throw new Exception("PUT请求失败,状态码:" + responseCode);
                     }
 //                    // 得到服务器返回数据
@@ -279,7 +283,7 @@ public class MyHttpUtil {
                         }
                     } else {
                         //请求失败
-                        Log.d("xxx", "状态码:" + responseCode);
+                        Log.d(TAG, "请求方法: DELETE, URL: " + address + ", 状态码: " + responseCode);
                         throw new Exception("DELETE请求失败,状态码:" + responseCode);
                     }
                 } catch (Exception e) {

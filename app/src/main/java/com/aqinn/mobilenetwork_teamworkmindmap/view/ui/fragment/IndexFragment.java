@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -22,20 +23,26 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.alibaba.fastjson.JSONObject;
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
 import com.aqinn.mobilenetwork_teamworkmindmap.activity.IndexActivity;
 import com.aqinn.mobilenetwork_teamworkmindmap.activity.MindmapActivity;
+import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindmapAdapter;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.ui.MyGridView;
 import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Aqinn
@@ -50,6 +57,7 @@ public class IndexFragment extends Fragment {
     private static final String TAG = "IndexFragment";
     public static MindmapAdapter mma;
     private MindMapManager mmm = MindMapManager.getInstance();
+    private Handler mHandler = new Handler();
     private int selectItemIndex = 0;
 
     public static IndexFragment newInstance() {
@@ -128,7 +136,61 @@ public class IndexFragment extends Fragment {
             case R.id.delete:
                 // 删除本地思维导图文件和数据库的文件，
                 // TODO 如果已经分享出去的导图且是思维导图的创建者，还需要执行关协作以及删除shareId
-                if (!mmm.deleteMindmap(mma.getMindmaps().get(selectItemIndex).getMmId())) {
+                Long mmIdDelTemp = mma.getMindmaps().get(selectItemIndex).getMmId();
+                if (mmm.deleteMindmap(mmIdDelTemp)) {
+                    // TODO 后期待改进：这样直接更换一个Adapter有点low，
+                    //  但是没办法，正常的notifyDataSetChanged()会把第一个"新建思维导图"给删掉
+                    List<Mindmap> mindmapsTemp = new ArrayList<>();
+                    Mindmap tempMindmap = mma.getMindmaps().get(selectItemIndex);
+                    mma.getMindmaps().remove(selectItemIndex);
+                    for (int i = 0; i < mma.getMindmaps().size(); i++) {
+                        mindmapsTemp.add(i, mma.getMindmaps().get(i));
+                    }
+                    mma = new MindmapAdapter(getActivity(), mindmapsTemp);
+                    gv_main.setAdapter(mma);
+                    Log.d(TAG, "onContextItemSelected: 思维导图本地删除成功");
+                    if (tempMindmap.getShareId() != 0L
+                            || tempMindmap.getShareId() != -1L) {
+                        Map<String, String> header = new HashMap<>();
+                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
+                        header.put("Content-Type", "application/json");
+                        Log.d(TAG, "onContextItemSelected: " + PublicConfig.url_delete_deleteMindmap(mmIdDelTemp));
+                        MyHttpUtil.delete(PublicConfig.url_delete_deleteMindmap(tempMindmap.getShareId())
+                                , header
+                                , new MyHttpUtil.HttpCallbackListener() {
+                                    @Override
+                                    public void beforeFinish(HttpURLConnection connection) {
+
+                                    }
+                                    @Override
+                                    public void onFinish(String response) {
+                                        JSONObject jo = JSONObject.parseObject(response);
+                                        if (jo.getBoolean("status") == true) {
+                                            mHandler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                }
+                                            });
+                                            Log.d(TAG, "onFinish: 删除在线导图成功 => " + response);
+                                        } else {
+                                            Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
+                                            Log.d(TAG, "onFinish: 删除导图失败 => " + response);
+                                            Snackbar.make(gv_main, "本地导图删除成功,云端导图删除失败", Snackbar.LENGTH_SHORT)
+                                                    .setAction("Action", null).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e, String response) {
+                                        e.printStackTrace();
+                                        Log.d(TAG, "onError: 删除导图失败: " + response);
+                                        Snackbar.make(gv_main, "本地导图删除成功,云端导图删除失败", Snackbar.LENGTH_SHORT)
+                                                .setAction("Action", null).show();
+                                    }
+                                });
+                        break;
+                    }
+                } else {
                     Snackbar.make(gv_main, "删除失败", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                     Log.d(TAG, "onContextItemSelected: 删除失败");
