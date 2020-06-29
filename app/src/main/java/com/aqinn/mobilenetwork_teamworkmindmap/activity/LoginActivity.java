@@ -164,8 +164,8 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         bt_offLine.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View view) {
-                CommonUtil.setUser(getParent(), -1L);
-                CommonUtil.setUserCookie(getParent(), "");
+                CommonUtil.setUser(context, -1L);
+                CommonUtil.deleteUserCookie(context);
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, IndexActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

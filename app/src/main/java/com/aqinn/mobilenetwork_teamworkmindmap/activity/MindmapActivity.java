@@ -252,6 +252,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                         Snackbar.make(treev_mainTreeView, "根节点不能添加同级节点", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                         Log.d(TAG, "showEdit: 根节点不能添加同级节点");
+                        break;
                     }
                     if (mm.getShareOn() == 0) {
                         Long nIdTemp = mmm.getNewNodeId(mmId);
