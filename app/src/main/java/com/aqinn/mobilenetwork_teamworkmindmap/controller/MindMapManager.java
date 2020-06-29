@@ -375,7 +375,6 @@ public class MindMapManager {
         return json2tm(res);
     }
 
-
     public Long uploadLocalVersionTreeModel() {
         return null;
     }

@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/dialog_fragment_bg_radius">
+    android:background="@drawable/dialog_fragment_bg_radius"
+    android:id="@+id/al_find">
 
     <TextView
         android:id="@+id/tv_share_mm"
@@ -59,7 +60,7 @@
         android:inputType="textPersonName" />
 
     <Button
-        android:id="@+id/tv_tips"
+        android:id="@+id/bt_confirm"
         android:layout_width="310dp"
         android:layout_height="30dp"
         android:layout_x="14dp"
@@ -69,7 +70,7 @@
         android:background="@drawable/button_blue_backgroud" />
 
     <ImageView
-        android:id="@+id/iv_share_or_not"
+        android:id="@+id/iv_cloud"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_x="280dp"

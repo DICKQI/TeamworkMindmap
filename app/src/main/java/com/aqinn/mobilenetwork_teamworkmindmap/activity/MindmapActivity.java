@@ -136,12 +136,12 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         /*
         TODO
          1. 两方面（本地数据库 和 网络）查询 该导图有没有开共享
-         2.     如果 开，able=T
-                如果 关，图是自己的话，able=T
-                如果 关，图是他人的话，able=F
-                如果请求出问题，图是自己的话，开，able=F
-                如果请求出问题，图是自己的话，关，able=T
-                如果请求出问题，图是他人的话，able=F
+         2.     1 如果 开，able=T
+                2 如果 关，图是自己的话，able=T
+                3 如果 关，图是他人的话，able=F
+                4 如果请求出问题，图是自己的话，开，able=F
+                5 如果请求出问题，图是自己的话，关，able=T
+                6 如果请求出问题，图是他人的话，able=F
          */
         Mindmap db_mm = mmm.getMindmapByMmId(mmId);
         shareId = db_mm.getShareId();
@@ -381,7 +381,6 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                                             public void beforeFinish(HttpURLConnection connection) {
 
                                             }
-
                                             @Override
                                             public void onFinish(String response) {
                                                 System.out.println(response);
