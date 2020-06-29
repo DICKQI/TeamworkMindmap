@@ -34,6 +34,11 @@ import java.util.Map;
  */
 public class MindMapManager {
 
+    // 文件操作 单例模式
+    private FileUtil fileUtil = FileUtil.getInstance();
+    // json转tw的中间变量
+    private JSONArray tmsja = new JSONArray();
+
     /***********
      * 单例模式 *
      ***********/
@@ -48,30 +53,35 @@ public class MindMapManager {
         private static final MindMapManager instance = new MindMapManager();
     }
 
-    private FileUtil fileUtil = FileUtil.getInstance();
-
+    /**
+     * 随机生成唯一的nodeId
+     * @param mmId TODO 这个参数暂时是多余的，因为本来是想着在这个方法里去请求后台，
+     *              但是介于更新UI等问题，现选择把该方法当做关协作情况下的专用生成nodeId方法
+     * @return
+     */
     public Long getNewNodeId(Long mmId) {
         //判断如果mmId是关协作的话，直接返回当前系统时间
-        Mindmap mm = DBUtil.queryMindmapByMmId(mmId);
-        if (mm.getShareOn() == 0) {
-            return System.currentTimeMillis();
-        } else {
-            // TODO 请求后台，返回实际的节点ID
-            return System.currentTimeMillis();
-        }
+//        Mindmap mm = DBUtil.queryMindmapByMmId(mmId);
+//        if (mm.getShareOn() == 0) {
+//            return System.currentTimeMillis();
+//        } else {
+//            // 请求后台，返回实际的节点ID
+//            return System.currentTimeMillis();
+//        }
+        return System.currentTimeMillis();
     }
 
-    public Long insertUserOwnMindmap(Long userId, Long mmId, Long ownerId) {
-        return DBUtil.insertUserOwnMindmap(userId, mmId);
-    }
-
-    public static int removeUserOwnMindmap(Long mmId) {
-        return DBUtil.removeUserOwnMindmap(mmId);
-    }
-
+    /**
+     * 获取用户的思维导图列表
+     * TODO 现阶段的逻辑较为简单，有待改进。
+     * 目前是先在`tb_Mindmap`获取所有用户在本地数据库的思维导图，
+     * 再从`tb_user_own_mindmap`获取该用户所拥有的所有Mindmap的mmId，再逐个取出
+     * @param userId
+     * @return
+     */
     public List<Mindmap> getUserAllMindmap(Long userId) {
-        List<Long> longList = DBUtil.getUserOwnMindmap(userId);
         List<Mindmap> allMindmap = getAllMindmap();
+        List<Long> longList = DBUtil.getUserOwnMindmap(userId);
         List<Mindmap> userMindmap = new ArrayList<>();
         for (int i = 0; i < allMindmap.size(); i++) {
             for (int j = 0; j < longList.size(); j++) {
@@ -84,40 +94,21 @@ public class MindMapManager {
         return userMindmap;
     }
 
+    /**
+     * 获取本地数据库中所有的Mindmap
+     * @return
+     */
     public List<Mindmap> getAllMindmap() {
         return DBUtil.queryAllMindmap();
     }
 
+    /**
+     * 根据mmId从本地数据库中获取所有思维导图的列表
+     * @param mmId
+     * @return
+     */
     public Mindmap getMindmapByMmId(Long mmId) {
         return DBUtil.queryMindmapByMmId(mmId);
-    }
-
-    /*
-      TODO
-     * 1.上传本地版本并获取shareId
-     * 2.根据shareId获取云端版本
-     */
-    public Long uploadLocalVersionTreeModel() {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                MyHttpPost post = new MyHttpPost("科科的URL");
-                Map<String, String> params = new HashMap<>();
-                params.put("treeModel", "???");
-                RespMsg msg = post.req(params);
-                final String respCodeMsg = msg.getRespCodeMsg();
-                final String respBody = msg.getRespBody();
-            }
-        });
-        t.start();
-        return 0L;
-    }
-
-    public TreeModel<String> updateTreeModelByShareId(Long shareId) {
-        String res = "";
-        String json = HttpUtils.post("科科的URL");
-        // 中间不知道需要经过什么处理
-        return json2tm(res);
     }
 
     /**
@@ -189,21 +180,30 @@ public class MindMapManager {
         return tm;
     }
 
-    private JSONArray tmsja = new JSONArray();
-
     /**
      * TreeModel转成后台请求所需格式的JSON
+     * @param tms
+     * @return
      */
     public String tm2json(TreeModel<String> tms) {
         return nm2json(tms.getRootNode());
     }
 
+    /**
+     * NodeModel转JSON
+     * @param nm
+     * @return
+     */
     public String nm2json(NodeModel<String> nm) {
         tmsja.clear();
         nm2jo(nm);
         return tmsja.toJSONString();
     }
 
+    /**
+     * NodeModel转JSONObject
+     * @param nms
+     */
     private void nm2jo(NodeModel<String> nms) {
         JSONObject jo = new JSONObject();
         jo.put("nodeId", nms.getnId());
@@ -275,7 +275,12 @@ public class MindMapManager {
         return true;
     }
 
-
+    /**
+     * 保存TreeModel到文件系统
+     * @param id
+     * @param tm
+     * @return
+     */
     public boolean saveTree(Long id, TreeModel tm) {
         String path = Environment.getExternalStorageDirectory().getPath()
                 + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
@@ -293,6 +298,13 @@ public class MindMapManager {
         return true;
     }
 
+    /**
+     * 保存Object（TreeModel）
+     * 私有方法
+     * @param filePath
+     * @param object
+     * @throws IOException
+     */
     private void writeTreeObject(String filePath, Object object) throws IOException {
         FileOutputStream fos = new FileOutputStream(filePath);
         ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -300,6 +312,12 @@ public class MindMapManager {
         oos.close();
     }
 
+    /**
+     * 思维导图第一次开协作
+     * @param mmId
+     * @param shareId
+     * @return
+     */
     public int mindmapFirstShareOn(Long mmId, Long shareId) {
         Mindmap mm = getMindmapByMmId(mmId);
         mm.setShareOn(1);
@@ -307,16 +325,83 @@ public class MindMapManager {
         return DBUtil.updateMindmap(mm, 0, 1, 1, 1);
     }
 
+    /**
+     * 思维导图非第一次开协作
+     * @param mmId
+     * @return
+     */
     public int mindmapShareOn(Long mmId) {
         Mindmap mm = getMindmapByMmId(mmId);
         mm.setShareOn(1);
         return DBUtil.updateMindmap(mm, 0, 0, 1, 1);
     }
 
+    /**
+     * 思维导图关协作
+     * @param mmId
+     * @return
+     */
     public int mindmapShareOff(Long mmId) {
         Mindmap mm = getMindmapByMmId(mmId);
         mm.setShareOn(0);
         return DBUtil.updateMindmap(mm, 0, 0, 1, 1);
+    }
+
+
+    /********************
+     * 目前不怎么用得到的方法 *
+     *******************/
+
+    /**
+     * TODO 在程序后台定时运行的方式，定时从网上获取最新的数据
+     * @param shareId
+     * @return
+     */
+    public TreeModel<String> updateTreeModelByShareId(Long shareId) {
+        String res = "";
+        String json = HttpUtils.post("科科的URL");
+        // 中间不知道需要经过什么处理
+        return json2tm(res);
+    }
+
+    /*
+     * 1.上传本地版本并获取shareId
+     * 2.根据shareId获取云端版本
+     */
+    public Long uploadLocalVersionTreeModel() {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MyHttpPost post = new MyHttpPost("科科的URL");
+                Map<String, String> params = new HashMap<>();
+                params.put("treeModel", "???");
+                RespMsg msg = post.req(params);
+                final String respCodeMsg = msg.getRespCodeMsg();
+                final String respBody = msg.getRespBody();
+            }
+        });
+        t.start();
+        return 0L;
+    }
+
+    /**
+     * 添加导图的拥有者信息
+     * @param userId
+     * @param mmId
+     * @param ownerId
+     * @return
+     */
+    public Long insertUserOwnMindmap(Long userId, Long mmId, Long ownerId) {
+        return DBUtil.insertUserOwnMindmap(userId, mmId);
+    }
+
+    /**
+     * 修改导图的拥有者信息
+     * @param mmId
+     * @return
+     */
+    public static int removeUserOwnMindmap(Long mmId) {
+        return DBUtil.removeUserOwnMindmap(mmId);
     }
 
 }

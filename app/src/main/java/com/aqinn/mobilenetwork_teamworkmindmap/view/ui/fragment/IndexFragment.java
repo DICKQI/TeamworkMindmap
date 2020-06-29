@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -46,6 +47,7 @@ public class IndexFragment extends Fragment {
     private GridView gv_main;
 
     // 其它
+    private static final String TAG = "IndexFragment";
     public static MindmapAdapter mma;
     private MindMapManager mmm = MindMapManager.getInstance();
     private int selectItemIndex = 0;
@@ -71,14 +73,13 @@ public class IndexFragment extends Fragment {
         super.onResume();
         initAllView();
 
-        final List<Mindmap> mindmaps = testData();
+        final List<Mindmap> mindmaps = initData();
         mma = new MindmapAdapter(getActivity(), mindmaps);
         gv_main.setAdapter(mma);
         gv_main.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
-                    // TODO 新建思维导图 应该是先弹出一个AlertFragment，确定了以后就开启MindmapActivity
                     CreateMindmapDialogFragment cmdf = new CreateMindmapDialogFragment();
                     FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
                     ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
@@ -98,14 +99,6 @@ public class IndexFragment extends Fragment {
                 }
             }
         });
-//        gv_main.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//            @Override
-//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-//                // 长按每一思维导图应该能显示 删除 修改名字
-//                // 第一个思维导图（新建思维导图），不需要有任何操作
-//                return false;
-//            }
-//        });
         gv_main.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
             @Override
             public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -124,9 +117,8 @@ public class IndexFragment extends Fragment {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.share:
-                // TODO 弹出分享窗口 true代表已共享 false代表关共享 还有shareId
-                Mindmap mm = mmm.getMindmapByMmId(mma.getMindmaps().get(selectItemIndex).getMmId());
-                ShareMindmapDialogFragment sdf = new ShareMindmapDialogFragment(mm.getMmId(), mm.getName(), mm.getShareOn() == 0 ? false : true, mm.getShareId());
+                Long mmIdTemp = mma.getMindmaps().get(selectItemIndex).getMmId();
+                ShareMindmapDialogFragment sdf = new ShareMindmapDialogFragment(mmIdTemp);
                 FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 sdf.show(ft, "shareMindmapDialogFragment");
@@ -134,14 +126,15 @@ public class IndexFragment extends Fragment {
                         .setAction("Action", null).show();
                 break;
             case R.id.delete:
-                // 1.删除本地思维导图文件和数据库的文件，
-                // 2. TODO 如果已经分享出去的导图且是思维导图的创建者，还需要执行关协作以及删除shareId
+                // 删除本地思维导图文件和数据库的文件，
+                // TODO 如果已经分享出去的导图且是思维导图的创建者，还需要执行关协作以及删除shareId
                 if (!mmm.deleteMindmap(mma.getMindmaps().get(selectItemIndex).getMmId())) {
                     Snackbar.make(gv_main, "删除失败", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
+                    Log.d(TAG, "onContextItemSelected: 删除失败");
                     break;
                 }
-                // TODO 这样直接更换一个Adapter有点low，
+                // TODO 后期待改进：这样直接更换一个Adapter有点low，
                 //  但是没办法，正常的notifyDataSetChanged()会把第一个"新建思维导图"给删掉
                 List<Mindmap> mindmapsTemp = new ArrayList<>();
                 mma.getMindmaps().remove(selectItemIndex);
@@ -155,8 +148,7 @@ public class IndexFragment extends Fragment {
         return true;
     }
 
-    private List<Mindmap> testData() {
-        // 筛选出只有本用户的Mindmap
+    private List<Mindmap> initData() {
         List<Mindmap> mindmaps = mmm.getUserAllMindmap(CommonUtil.getUser(getActivity()));
         Mindmap add = new Mindmap("add");
         mindmaps.add(0, add);

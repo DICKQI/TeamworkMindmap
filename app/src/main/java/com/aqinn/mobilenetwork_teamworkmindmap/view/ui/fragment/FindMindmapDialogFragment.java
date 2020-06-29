@@ -30,13 +30,13 @@ public class FindMindmapDialogFragment extends DialogFragment implements View.On
 
 
     // 其它
+    private static final String TAG = "FindMindmapDF";
     public static Dialog dialog;
     private MindMapManager mmm = MindMapManager.getInstance();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.MyDialog);
     }
 
     @Nullable
@@ -48,6 +48,7 @@ public class FindMindmapDialogFragment extends DialogFragment implements View.On
     }
 
     private void initAllView(View v_fm) {
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -57,7 +58,6 @@ public class FindMindmapDialogFragment extends DialogFragment implements View.On
         dialog = getDialog();
         Window win = getDialog().getWindow();
         win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-//        win.setLayout(850, 985);
         WindowManager.LayoutParams params = win.getAttributes();
         params.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         win.setAttributes(params);

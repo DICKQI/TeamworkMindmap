@@ -75,7 +75,6 @@ public class EditMindnodeDialogFragment extends DialogFragment implements View.O
         dialog = getDialog();
         Window win = getDialog().getWindow();
         win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-//        win.setLayout(850, 985);
         WindowManager.LayoutParams params = win.getAttributes();
         params.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         win.setAttributes(params);
@@ -109,20 +108,6 @@ public class EditMindnodeDialogFragment extends DialogFragment implements View.O
             case R.id.bt_confirm:
                 onEditFragmentListener.editMindnode(et_main.getText().toString());
                 dismiss();
-//                switch (this.status) {
-//                    case 0:
-//                        // 错误状态
-//                        break;
-//                    case 1:
-//                        // 添加同级节点
-//                        break;
-//                    case 2:
-//                        // 添加子节点
-//                        break;
-//                    case 3:
-//                        // 修改该节点
-//                        break;
-//                }
                 break;
             case R.id.bt_delete:
                 if (status == 3)

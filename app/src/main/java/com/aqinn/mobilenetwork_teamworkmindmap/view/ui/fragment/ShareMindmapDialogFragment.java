@@ -32,6 +32,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.DBUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
+import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -51,27 +52,26 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
 
     // 其它
     private static final String TAG = "ShareMindmapDF";
+    public static Dialog dialog;
     private MindMapManager mmm = MindMapManager.getInstance();
     private FileUtil fileUtil = FileUtil.getInstance();
     private Long mmId;
     private String name;
     private boolean shareOrNot;
     private Long shareId;
-    public static Dialog dialog;
     private Drawable share_cancel, share_mm_blue;
 
-    public ShareMindmapDialogFragment(Long mmId, String name, boolean shareOrNot, Long shareId) {
+    public ShareMindmapDialogFragment(Long mmId) {
+        Mindmap mm = mmm.getMindmapByMmId(mmId);
         this.mmId = mmId;
-        this.name = name;
-        this.shareOrNot = shareOrNot;
-        this.shareId = shareId;
+        this.name = mm.getName();
+        this.shareOrNot = mm.getShareOn() == 0 ? false : true;
+        this.shareId = mm.getShareId();
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.MyDialog);
-
     }
 
     @Nullable
@@ -88,7 +88,6 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
         dialog = getDialog();
         Window win = getDialog().getWindow();
         win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-//        win.setLayout(850, 985);
         WindowManager.LayoutParams params = win.getAttributes();
         params.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         win.setAttributes(params);
@@ -98,16 +97,15 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.iv_share_or_not:
-                // TODO 在此共享思维导图 上传到云端
+                // 在此开/关协助 即 共享思维导图 上传到云端
                 if (shareOrNot) {
                     // TODO 目前是开共享状态的，点击后会变关，等科科的后台：关协助
                     iv_share_or_not.setImageDrawable(share_mm_blue);
                     et_share_id.setText("");
                 } else {
                     if (shareId != -1L) {
-                        // 第一次共享
+                        // 思维导图第一次共享的情况 即 后台数据库还没给本导图ShareId
                         Map<String, String> header = new HashMap<>();
-//                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
                         header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
                         header.put("Content-Type", "application/json");
                         TreeModel<String> tree = null;
@@ -157,9 +155,8 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                 System.out.println("response => " + response);
                             }
                         });
-                    } else { // 非第一次共享了
+                    } else { // 非第一次共享该思维导图的情况 即 后台数据库已经有了本导图的ShareId
                         Map<String, String> header = new HashMap<>();
-//                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
                         header.put("Cookie",  CommonUtil.getUserCookie(getActivity()));
                         header.put("Content-Type", "application/json");
                         TreeModel<String> tree = null;
@@ -173,6 +170,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                         }
                         JSONObject jo = new JSONObject();
                         jo.put("mapName", name);
+                        // TODO 注意 现在后台请求的数据可以把密码加上了 即 第二次修改导图协作状态的时候可以更改密码
 //                        jo.put("password", et_pwd.getText().toString());
                         String jsonTree = mmm.tm2json(tree);
                         jo.put("node", JSONArray.parseArray(jsonTree));
@@ -187,10 +185,10 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                             public void onFinish(String response) {
                                 System.out.println(response);
                                 JSONObject jo = JSONObject.parseObject(response);
-                                System.out.println(jo.get("shareID"));
                                 JSONObject joo = (JSONObject)jo.get("roomMaster");
-                                System.out.println(joo.get("name"));
-                                System.out.println(joo.get("id"));
+                                String username = joo.getString("name");
+                                Long userId = joo.getInteger("id").longValue();
+                                // TODO 记得把userId用起来 要是用不到的话 就把这句话删了
                                 if (mmm.mindmapShareOn(mmId) >= 1) {
                                     shareOrNot = true;
                                     Log.d(TAG, "非第一次分享思维导图网络请求成功");
@@ -203,7 +201,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                             @Override
                             public void onError(Exception e, String response) {
                                 e.printStackTrace();
-                                System.out.println("response => " + response);
+                                Log.d(TAG, "onError: " + response);
                             }
                         });
                     }

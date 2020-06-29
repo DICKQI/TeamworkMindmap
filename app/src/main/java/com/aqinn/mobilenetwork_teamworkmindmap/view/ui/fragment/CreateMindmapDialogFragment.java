@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,15 +49,13 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
     private ImageView iv_clear;
 
     // 其它
+    private static final String TAG = "CreateMindmapDF";
     public static Dialog dialog;
-    private DialogInterface.OnDismissListener mOnClickListener;
     private MindMapManager mmm = MindMapManager.getInstance();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.MyDialog);
-
     }
 
     @Nullable
@@ -74,7 +73,6 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
         dialog = getDialog();
         Window win = getDialog().getWindow();
         win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-//        win.setLayout(850, 985);
         WindowManager.LayoutParams params = win.getAttributes();
         params.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         win.setAttributes(params);
@@ -101,7 +99,9 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
                 if (mm == null) {
                     Snackbar.make(getView(), "创建失败", Snackbar.LENGTH_SHORT)
                             .setAction("Action", null).show();
+                    Log.d(TAG, "onClick: 创建思维导图失败");
                 } else {
+                    Log.d(TAG, "onClick: 创建思维导图成功");
                     IndexFragment.mma.getMindmaps().add(1, mm);
                     IndexFragment.mma.notifyDataSetChanged();
                     Intent intent = new Intent(getActivity(), MindmapActivity.class);
@@ -127,9 +127,6 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
         bt_cancel.setOnClickListener(this);
         bt_confirm.setOnClickListener(this);
     }
-
-    public void setOnDismissListener(DialogInterface.OnDismissListener listener) {
-        this.mOnClickListener = listener;
-    }
+    
 
 }

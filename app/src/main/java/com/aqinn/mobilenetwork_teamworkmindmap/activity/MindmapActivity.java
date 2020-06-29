@@ -101,49 +101,6 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         initAllView();
 
         initTreeModel();
-
-        treev_mainTreeView.setTreeViewItemClick(new TreeViewItemClick() {
-            @Override
-            public void onItemClick(View item) {
-                // TODO 暂时不知道做什么 2020.6.15.20:55
-            }
-        });
-
-        treev_mainTreeView.setTreeViewItemLongClick(new TreeViewItemLongClick() {
-            @Override
-            public void onLongClick(View view) {
-                showEdit("修改节点", treev_mainTreeView.getCurrentFocusNode().value, 3);
-            }
-        });
-
-        rl_treeView.setOnTouchListener(this);
-
-        rl_fbts.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        x_down_fbts = event.getRawX();
-                        y_down_fbts = event.getRawY();
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        float x_sub = event.getRawX() - x_down_fbts;
-                        float y_sub = event.getRawY() - y_down_fbts;
-                        rl_fbts.getLocationOnScreen(rl_fbts_location);
-                        x_move_fbts = rl_fbts_location[0];
-                        y_move_fbts = rl_fbts_location[1];
-                        rl_fbts.setX(rl_fbts.getX() + x_sub);
-                        rl_fbts.setY(rl_fbts.getY() + y_sub);
-                        x_down_fbts = event.getRawX();
-                        y_down_fbts = event.getRawY();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        break;
-                }
-                return true;
-            }
-        });
-
     }
 
     @Override
@@ -197,7 +154,6 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 ////            String json = "{\"node\":[{\"content\":\"A\",\"pid\":0,\"nid\":1},{\"content\":\"B\",\"pid\":1,\"nid\":2},{\"content\":\"C\",\"pid\":1,\"nid\":3},{\"content\":\"D\",\"pid\":5,\"nid\":4},{\"content\":\"E\",\"pid\":2,\"nid\":5}],\"shareId\":\"1\"}";
 ////            tree = mmm.json2tm(json);
 //        }
-
         int dx = DensityUtils.dp2px(this, 20);
         int dy = DensityUtils.dp2px(this, 20);
         int mHeight = DensityUtils.dp2px(this, 720);
@@ -211,18 +167,17 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         final EditMindnodeDialogFragment emdf = new EditMindnodeDialogFragment(title, content, status);
         emdf.setOnEditFragmentListener((String mnContent) -> {
             switch (status) {
-                case 1:
+                case 1: // 添加同级节点
                     if (treev_mainTreeView.getCurrentFocusNode().parentNode == null) {
                         Snackbar.make(treev_mainTreeView, "根节点不能添加同级节点", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
+                        Log.d(TAG, "showEdit: 根节点不能添加同级节点");
                     }
-                    Long nIdTemp = -1L;
                     if (mm.getShareOn() == 0) {
-                        nIdTemp = mmm.getNewNodeId(mmId);
+                        Long nIdTemp = mmm.getNewNodeId(mmId);
                         treev_mainTreeView.addNode(nIdTemp, mnContent);
                     } else {
                         Map<String, String> header = new HashMap<>();
-//                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
                         header.put("Cookie", CommonUtil.getUserCookie(this));
                         header.put("Content-Type", "application/json");
                         JSONObject jo = new JSONObject();
@@ -268,18 +223,9 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                                 });
                     }
                     break;
-                case 2:
-//                    Long nId2 = mmm.getNewNodeId(mmId);
-//                    if (nId2 != -1L) {
-//                        treev_mainTreeView.addSubNode(nId2, mnContent);
-//                    } else {
-//                        Log.d(TAG, "showEdit: 添加子级节点失败 => " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
-//                        Snackbar.make(treev_mainTreeView, "添加子级节点失败", Snackbar.LENGTH_SHORT)
-//                                .setAction("Action", null).show();
-//                    }
-                    Long nIdTempSub = -1L;
+                case 2: // 添加子级节点
                     if (mm.getShareOn() == 0) {
-                        nIdTempSub = mmm.getNewNodeId(mmId);
+                        Long nIdTempSub = mmm.getNewNodeId(mmId);
                         treev_mainTreeView.addSubNode(nIdTempSub, mnContent);
                     } else {
                         Map<String, String> header = new HashMap<>();
@@ -329,12 +275,12 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                                 });
                     }
                     break;
-                case 3:
-                    // TODO
+                case 3: // 修改节点内容 与 删除节点
                     if ("zzf删除专用代码aqinn删除专用代码biu删除专用代码".equals(mnContent)) {
                         if (treev_mainTreeView.getTreeModel().getRootNode() == treev_mainTreeView.getCurrentFocusNode()) {
                             Snackbar.make(treev_mainTreeView, "根节点不能删除", Snackbar.LENGTH_SHORT)
                                     .setAction("Action", null).show();
+                            Log.d(TAG, "showEdit: 根节点不能删除");
                         } else {
                             if (mm.getShareOn() == 0) {
                                 treev_mainTreeView.deleteNode(treev_mainTreeView.getCurrentFocusNode());
@@ -460,12 +406,22 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                 treev_mainTreeView.focusMidLocation();
                 break;
             case R.id.fbt_saveAndExit:
-                Snackbar.make(v, "代码视图功能敬请期待，长按可保存并返回主界面", Snackbar.LENGTH_SHORT)
-                        .setAction("Action", null).show();
+                Mindmap mm = new Mindmap(mmId, name);
+                mm.setTm(treev_mainTreeView.getTreeModel());
+                // 保存导图到本地
+                mmm.saveMindmap(mm);
+                System.out.println(mmm.tm2json(treev_mainTreeView.getTreeModel()));
+                // 返回主页
+                Intent intent = new Intent(MindmapActivity.this, IndexActivity.class);
+                startActivity(intent);
+                break;
+            case -1:
+                // 待定
                 break;
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initAllView() {
         rl_treeView = findViewById(R.id.rl_treeView);
         treev_mainTreeView = findViewById(R.id.treev_mainTreeView);
@@ -475,6 +431,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         fbt_saveAndExit = findViewById(R.id.fbt_saveAndExit);
 //        iv_app_icon = findViewById(R.id.iv_app_icon);
         rl_fbts = findViewById(R.id.rl_fbts);
+
         rl_fbts.setX(rl_fbts.getX() - 50);
         rl_fbts.setY(rl_fbts.getY() - 50);
 
@@ -482,27 +439,55 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         fbt_node.setOnClickListener(this);
         fbt_focusMid.setOnClickListener(this);
         fbt_saveAndExit.setOnClickListener(this);
+        rl_treeView.setOnTouchListener(this);
         ColorMatrix cm = new ColorMatrix();
         cm.setSaturation(0f); // 设置饱和度
         ColorMatrixColorFilter grayColorFilter = new ColorMatrixColorFilter(cm);
 //        iv_app_icon.setColorFilter(grayColorFilter);
 
 
-        fbt_saveAndExit.setOnClickListener(new View.OnClickListener() {
+        treev_mainTreeView.setTreeViewItemClick(new TreeViewItemClick() {
             @Override
-            public void onClick(View v) {
-                Mindmap mm = new Mindmap(mmId, name);
-                mm.setTm(treev_mainTreeView.getTreeModel());
-                // 保存
-                mmm.saveMindmap(mm);
-                System.out.println(mmm.tm2json(treev_mainTreeView.getTreeModel()));
-                // 返回主页
-                Intent intent = new Intent(MindmapActivity.this, IndexActivity.class);
-                startActivity(intent);
+            public void onItemClick(View item) {
+                // TODO 暂时不知道做什么 2020.6.15.20:55
+            }
+        });
+
+        treev_mainTreeView.setTreeViewItemLongClick(new TreeViewItemLongClick() {
+            @Override
+            public void onLongClick(View view) {
+                showEdit("修改节点", treev_mainTreeView.getCurrentFocusNode().value, 3);
+            }
+        });
+
+        rl_fbts.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        x_down_fbts = event.getRawX();
+                        y_down_fbts = event.getRawY();
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        float x_sub = event.getRawX() - x_down_fbts;
+                        float y_sub = event.getRawY() - y_down_fbts;
+                        rl_fbts.getLocationOnScreen(rl_fbts_location);
+                        x_move_fbts = rl_fbts_location[0];
+                        y_move_fbts = rl_fbts_location[1];
+                        rl_fbts.setX(rl_fbts.getX() + x_sub);
+                        rl_fbts.setY(rl_fbts.getY() + y_sub);
+                        x_down_fbts = event.getRawX();
+                        y_down_fbts = event.getRawY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        break;
+                }
+                return true;
             }
         });
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         switch (event.getAction()) {
@@ -516,15 +501,8 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                 rl_fbts.getLocationOnScreen(rl_fbts_location);
                 x_move = rl_fbts_location[0];
                 y_move = rl_fbts_location[1];
-//                if (event.getRawX() > x_move && event.getRawY() > y_move
-//                        && event.getRawX() < x_move + rl_fbts.getWidth()
-//                        && event.getRawY() < y_move + rl_fbts.getHeight()) {
-//                    rl_fbts.setX(rl_fbts.getX() + x_sub);
-//                    rl_fbts.setY(rl_fbts.getY() + y_sub);
-//                } else {
                 treev_mainTreeView.setX(treev_mainTreeView.getX() + x_sub);
                 treev_mainTreeView.setY(treev_mainTreeView.getY() + y_sub);
-//                }
                 x_down = event.getRawX();
                 y_down = event.getRawY();
                 break;
