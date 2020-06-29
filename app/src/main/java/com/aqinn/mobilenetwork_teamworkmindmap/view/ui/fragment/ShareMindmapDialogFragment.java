@@ -177,14 +177,20 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                 System.out.println(joo.get("name"));
                                 System.out.println(joo.get("id"));
                                 shareId = ((Integer)jo.get("shareID")).longValue();
-                                if (mmm.mindmapFirstShareOn(mmId, shareId) >= 1) {
-                                    shareOrNot = true;
-                                    iv_share_or_not.setImageDrawable(share_cancel);
-                                    et_share_id.setText(String.valueOf(shareId));
-                                    Log.d(TAG, "第一次分享思维导图网络请求成功");
-                                } else {
-                                    Log.d(TAG, "第一次分享思维导图网络请求完成，本地数据库存储未完成");
-                                }
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (mmm.mindmapFirstShareOn(mmId, shareId) >= 1) {
+                                            shareOrNot = true;
+                                            iv_share_or_not.setImageDrawable(share_cancel);
+                                            et_share_id.setText(String.valueOf(shareId));
+                                            Log.d(TAG, "第一次分享思维导图网络请求成功");
+                                        } else {
+                                            Log.d(TAG, "第一次分享思维导图网络请求完成，本地数据库存储未完成");
+                                        }
+                                    }
+                                });
+
                             }
 
                             @Override
@@ -226,14 +232,19 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                 String username = joo.getString("name");
                                 Long userId = joo.getInteger("id").longValue();
                                 // TODO 记得把userId用起来 要是用不到的话 就把这句话删了
-                                if (mmm.mindmapShareOn(mmId) >= 1) {
-                                    shareOrNot = true;
-                                    iv_share_or_not.setImageDrawable(share_cancel);
-                                    et_share_id.setText(String.valueOf(shareId));
-                                    Log.d(TAG, "非第一次分享思维导图网络请求成功");
-                                } else {
-                                    Log.d(TAG, "非第一次分享思维导图网络请求完成，本地数据库存储未完成");
-                                }
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (mmm.mindmapShareOn(mmId) >= 1) {
+                                            shareOrNot = true;
+                                            iv_share_or_not.setImageDrawable(share_cancel);
+                                            et_share_id.setText(String.valueOf(shareId));
+                                            Log.d(TAG, "非第一次分享思维导图网络请求成功");
+                                        } else {
+                                            Log.d(TAG, "非第一次分享思维导图网络请求完成，本地数据库存储未完成");
+                                        }
+                                    }
+                                });
 
                             }
                             @Override
