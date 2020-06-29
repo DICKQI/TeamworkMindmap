@@ -49,14 +49,7 @@ public class MindMapManager {
     }
 
     private FileUtil fileUtil = FileUtil.getInstance();
-    private Handler mHandler = new Handler();
 
-    /**
-     * TODO 这是关键，未来开协作判断能不能成功也就是在这里了！！！！！！！！！！！！！！！！！！！！！！
-     *
-     * @param mmId
-     * @return
-     */
     public Long getNewNodeId(Long mmId) {
         //判断如果mmId是关协作的话，直接返回当前系统时间
         Mindmap mm = DBUtil.queryMindmapByMmId(mmId);
@@ -272,7 +265,7 @@ public class MindMapManager {
      * @return
      */
     public boolean deleteMindmap(Long mmId) {
-        int res = DBUtil.deleteToDoItem(mmId);
+        int res = DBUtil.deleteMindmap(mmId);
         if (res == 0)
             return false;
         String path = Environment.getExternalStorageDirectory().getPath()
@@ -307,23 +300,23 @@ public class MindMapManager {
         oos.close();
     }
 
-    public void mindmapFirstShareOn(Long mmId, Long shareId) {
+    public int mindmapFirstShareOn(Long mmId, Long shareId) {
         Mindmap mm = getMindmapByMmId(mmId);
         mm.setShareOn(1);
         mm.setShareId(shareId);
-        DBUtil.updateMindmap(mm, 0, 1, 1, 1);
+        return DBUtil.updateMindmap(mm, 0, 1, 1, 1);
     }
 
-    public void mindmapShareOn(Long mmId) {
+    public int mindmapShareOn(Long mmId) {
         Mindmap mm = getMindmapByMmId(mmId);
         mm.setShareOn(1);
-        DBUtil.updateMindmap(mm, 0, 0, 1, 1);
+        return DBUtil.updateMindmap(mm, 0, 0, 1, 1);
     }
 
-    public void mindmapShareOff(Long mmId) {
+    public int mindmapShareOff(Long mmId) {
         Mindmap mm = getMindmapByMmId(mmId);
         mm.setShareOn(0);
-        DBUtil.updateMindmap(mm, 0, 0, 1, 1);
+        return DBUtil.updateMindmap(mm, 0, 0, 1, 1);
     }
 
 }

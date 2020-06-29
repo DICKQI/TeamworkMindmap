@@ -32,6 +32,7 @@ public class DBUtil {
     private static DBHelper dbHelper;
     private static SQLiteDatabase db;
     private static Cursor cursor;
+    private static final String TAG = "DBUtil";
 
     static {
         dbHelper = MyApplication.dbHelper;
@@ -154,8 +155,10 @@ public class DBUtil {
     public static int updateMindmap(Mindmap mm, int name_, int shareId_, int shareOn_, int pwd_) {
         int result = -1;
         Mindmap t = queryMindmapByMmId(mm.getMmId());
-        if (t == null)
+        if (t == null) {
+            Log.d(TAG, "updateMindmap => " + "查无此图");
             return result;
+        }
         db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         if (name_ == 1)
@@ -166,9 +169,12 @@ public class DBUtil {
             values.put("share_on", mm.getShareOn());
         if (pwd_ == 1)
             values.put("pwd", mm.getPwd());
-        if (name_ != 1 && shareId_ != 1 && shareOn_ != 1 && pwd_ != 1)
+        if (name_ != 1 && shareId_ != 1 && shareOn_ != 1 && pwd_ != 1) {
+            Log.d(TAG, "updateMindmap => " + "无更新操作，直接返回");
             return result;
+        }
         result = db.update("tb_mindmap", values, "_id=?", new String[]{String.valueOf(t.getMmId())});
+        Log.d(TAG, "updateMindmap => " + "更新操作结果为: " + result);
         db.close();
         return result;
     }
@@ -179,7 +185,7 @@ public class DBUtil {
      * @param mmId
      * @return
      */
-    public static int deleteToDoItem(Long mmId) {
+    public static int deleteMindmap(Long mmId) {
         db = dbHelper.getWritableDatabase();
         int result = db.delete("tb_mindmap", "_id=?", new String[]{String.valueOf(mmId)});
         db.close();

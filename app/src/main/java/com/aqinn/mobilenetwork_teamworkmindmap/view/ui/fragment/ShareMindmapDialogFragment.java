@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +50,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
     private ImageView iv_share_or_not;
 
     // 其它
+    private static final String TAG = "ShareMindmapDF";
     private MindMapManager mmm = MindMapManager.getInstance();
     private FileUtil fileUtil = FileUtil.getInstance();
     private Long mmId;
@@ -105,7 +108,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                         // 第一次共享
                         Map<String, String> header = new HashMap<>();
 //                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
-                        header.put("Cookie",  "sessionid=8p6ayn3i0fxyop96k0r47t5dhm2eeegb; expires=Sun, 12 Jul 2020 06:46:54 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax");
+                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
                         header.put("Content-Type", "application/json");
                         TreeModel<String> tree = null;
                         String path = Environment.getExternalStorageDirectory().getPath() + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
@@ -136,8 +139,16 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                 JSONObject joo = (JSONObject)jo.get("roomMaster");
                                 System.out.println(joo.get("name"));
                                 System.out.println(joo.get("id"));
-                                mmm.mindmapFirstShareOn(mmId, (Long) jo.get("shareID"));
-                                shareOrNot = true;
+                                shareId = ((Integer)jo.get("shareID")).longValue();
+                                if (mmm.mindmapFirstShareOn(mmId, shareId) >= 1) {
+                                    shareOrNot = true;
+                                    iv_share_or_not.setImageDrawable(share_cancel);
+                                    et_share_id.setText(String.valueOf(shareId));
+                                    Log.d(TAG, "第一次分享思维导图网络请求成功");
+                                } else {
+                                    Log.d(TAG, "第一次分享思维导图网络请求完成，本地数据库存储未完成");
+                                }
+
                             }
 
                             @Override
@@ -149,7 +160,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                     } else { // 非第一次共享了
                         Map<String, String> header = new HashMap<>();
 //                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
-                        header.put("Cookie",  "sessionid=8p6ayn3i0fxyop96k0r47t5dhm2eeegb; expires=Sun, 12 Jul 2020 06:46:54 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax");
+                        header.put("Cookie",  CommonUtil.getUserCookie(getActivity()));
                         header.put("Content-Type", "application/json");
                         TreeModel<String> tree = null;
                         String path = Environment.getExternalStorageDirectory().getPath() + PublicConfig.MINDMAPS_FILE_LOCATION + PublicConfig.CONTENT_LOCATION;
@@ -180,8 +191,13 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                 JSONObject joo = (JSONObject)jo.get("roomMaster");
                                 System.out.println(joo.get("name"));
                                 System.out.println(joo.get("id"));
-                                mmm.mindmapShareOn(mmId);
-                                shareOrNot = true;
+                                if (mmm.mindmapShareOn(mmId) >= 1) {
+                                    shareOrNot = true;
+                                    Log.d(TAG, "非第一次分享思维导图网络请求成功");
+                                } else {
+                                    Log.d(TAG, "非第一次分享思维导图网络请求完成，本地数据库存储未完成");
+                                }
+
                             }
 
                             @Override
@@ -191,10 +207,6 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                             }
                         });
                     }
-                    if (!shareOrNot)
-                        break;
-                    iv_share_or_not.setImageDrawable(share_cancel);
-                    et_share_id.setText("123456");
                 }
                 break;
         }

@@ -8,6 +8,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -29,6 +30,7 @@ import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.DensityUtils;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
@@ -66,8 +68,10 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     private Long mmId;
 
     //其它
+    private static final String TAG = "MindmapActivity";
     private MindMapManager mmm = MindMapManager.getInstance();
     private FileUtil fileUtil = FileUtil.getInstance();
+    private Handler mHandler = new Handler();
     private Mindmap mm;
     private float x_down = -1, y_down = -1, x_down_fbts = -1, y_down_fbts = -1;
     private int[] rl_fbts_location = new int[2];
@@ -212,13 +216,14 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                         Snackbar.make(treev_mainTreeView, "根节点不能添加同级节点", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                     }
-                    Long nId1 = -1L;
-                    if (mm.getShareOn() == 0)
-                        nId1 = mmm.getNewNodeId(mmId);
-                    else {
+                    Long nIdTemp = -1L;
+                    if (mm.getShareOn() == 0) {
+                        nIdTemp = mmm.getNewNodeId(mmId);
+                        treev_mainTreeView.addNode(nIdTemp, mnContent);
+                    } else {
                         Map<String, String> header = new HashMap<>();
 //                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
-                        header.put("Cookie", "sessionid=8p6ayn3i0fxyop96k0r47t5dhm2eeegb; expires=Sun, 12 Jul 2020 06:46:54 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax");
+                        header.put("Cookie", CommonUtil.getUserCookie(this));
                         header.put("Content-Type", "application/json");
                         JSONObject jo = new JSONObject();
                         jo.put("content", mnContent);
@@ -235,29 +240,93 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                                     @Override
                                     public void onFinish(String response) {
                                         System.out.println(response);
+                                        JSONObject jo = JSONObject.parseObject(response);
+                                        if (jo.getBoolean("status") == true) {
+                                            mHandler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    treev_mainTreeView.addNode(jo.getLong("nodeId"), mnContent);
+                                                }
+                                            });
+                                            Log.d(TAG, "showEdit: 添加同级节点成功 => " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                        } else {
+                                            Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
+                                            Log.d(TAG, "showEdit: 添加同级节点失败: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                            Snackbar.make(treev_mainTreeView, "添加同级节点失败", Snackbar.LENGTH_SHORT)
+                                                    .setAction("Action", null).show();
+                                        }
                                     }
 
                                     @Override
                                     public void onError(Exception e, String response) {
                                         e.printStackTrace();
-                                        System.out.println("response => " + response);
+                                        System.out.println("response: " + response);
+                                        Log.d(TAG, "showEdit: 添加同级节点失败: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                        Snackbar.make(treev_mainTreeView, "添加同级节点失败", Snackbar.LENGTH_SHORT)
+                                                .setAction("Action", null).show();
                                     }
                                 });
                     }
-                    if (nId1 != -1L) {
-                        treev_mainTreeView.addNode(nId1, mnContent);
-                    } else {
-                        Snackbar.make(treev_mainTreeView, "添加同级节点失败", Snackbar.LENGTH_SHORT)
-                                .setAction("Action", null).show();
-                    }
                     break;
                 case 2:
-                    Long nId2 = mmm.getNewNodeId(mmId);
-                    if (nId2 != -1L) {
-                        treev_mainTreeView.addSubNode(nId2, mnContent);
+//                    Long nId2 = mmm.getNewNodeId(mmId);
+//                    if (nId2 != -1L) {
+//                        treev_mainTreeView.addSubNode(nId2, mnContent);
+//                    } else {
+//                        Log.d(TAG, "showEdit: 添加子级节点失败 => " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+//                        Snackbar.make(treev_mainTreeView, "添加子级节点失败", Snackbar.LENGTH_SHORT)
+//                                .setAction("Action", null).show();
+//                    }
+                    Long nIdTempSub = -1L;
+                    if (mm.getShareOn() == 0) {
+                        nIdTempSub = mmm.getNewNodeId(mmId);
+                        treev_mainTreeView.addSubNode(nIdTempSub, mnContent);
                     } else {
-                        Snackbar.make(treev_mainTreeView, "添加子级节点失败", Snackbar.LENGTH_SHORT)
-                                .setAction("Action", null).show();
+                        Map<String, String> header = new HashMap<>();
+//                        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
+                        header.put("Cookie", CommonUtil.getUserCookie(this));
+                        header.put("Content-Type", "application/json");
+                        JSONObject jo = new JSONObject();
+                        jo.put("content", mnContent);
+                        String data = jo.toJSONString();
+                        MyHttpUtil.post(PublicConfig.url_post_addNode(mm.getShareId()
+                                , treev_mainTreeView.getCurrentFocusNode().nId)
+                                , header, data
+                                , new MyHttpUtil.HttpCallbackListener() {
+                                    @Override
+                                    public void beforeFinish(HttpURLConnection connection) {
+
+                                    }
+
+                                    @Override
+                                    public void onFinish(String response) {
+                                        System.out.println(response);
+                                        JSONObject jo = JSONObject.parseObject(response);
+                                        if (jo.getBoolean("status") == true) {
+                                            mHandler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    treev_mainTreeView.addSubNode(jo.getLong("nodeId"), mnContent);
+                                                }
+                                            });
+                                            Log.d(TAG, "showEdit: 添加子级节点成功 => " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                        } else {
+                                            Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
+                                            Log.d(TAG, "showEdit: 添加子级节点失败: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                            Snackbar.make(treev_mainTreeView, "添加子级节点失败", Snackbar.LENGTH_SHORT)
+                                                    .setAction("Action", null).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e, String response) {
+                                        e.printStackTrace();
+                                        System.out.println("response: " + response);
+                                        Log.d(TAG, "showEdit: 添加子级节点失败: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                        Snackbar.make(treev_mainTreeView, "添加子级节点失败", Snackbar.LENGTH_SHORT)
+                                                .setAction("Action", null).show();
+                                    }
+                                });
                     }
                     break;
                 case 3:
@@ -267,11 +336,109 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                             Snackbar.make(treev_mainTreeView, "根节点不能删除", Snackbar.LENGTH_SHORT)
                                     .setAction("Action", null).show();
                         } else {
-                            treev_mainTreeView.deleteNode(treev_mainTreeView.getCurrentFocusNode());
+                            if (mm.getShareOn() == 0) {
+                                treev_mainTreeView.deleteNode(treev_mainTreeView.getCurrentFocusNode());
+                                Log.d(TAG, "showEdit: 删除节点成功: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                            } else {
+                                Map<String, String> header = new HashMap<>();
+                                header.put("Cookie", CommonUtil.getUserCookie(this));
+                                header.put("Content-Type", "application/json");
+                                JSONObject jo = new JSONObject();
+                                jo.put("content", mnContent);
+                                String data = jo.toJSONString();
+                                MyHttpUtil.delete(PublicConfig.url_delete_deleteNodeAndSubNode(mm.getShareId()
+                                        , treev_mainTreeView.getCurrentFocusNode().nId)
+                                        , header
+                                        , new MyHttpUtil.HttpCallbackListener() {
+                                            @Override
+                                            public void beforeFinish(HttpURLConnection connection) {
+
+                                            }
+
+                                            @Override
+                                            public void onFinish(String response) {
+                                                System.out.println(response);
+                                                JSONObject jo = JSONObject.parseObject(response);
+                                                if (jo.getBoolean("status") == true) {
+                                                    mHandler.post(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            treev_mainTreeView.deleteNode(treev_mainTreeView.getCurrentFocusNode());
+                                                        }
+                                                    });
+                                                    Log.d(TAG, "showEdit: 删除节点成功 => " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                                } else {
+                                                    Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
+                                                    Log.d(TAG, "showEdit: 删除节点失败: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                                    Snackbar.make(treev_mainTreeView, "删除失败", Snackbar.LENGTH_SHORT)
+                                                            .setAction("Action", null).show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onError(Exception e, String response) {
+                                                e.printStackTrace();
+                                                System.out.println("response: " + response);
+                                                Log.d(TAG, "showEdit: 删除节点失败: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                                Snackbar.make(treev_mainTreeView, "删除节点失败", Snackbar.LENGTH_SHORT)
+                                                        .setAction("Action", null).show();
+                                            }
+                                        });
+                            }
                         }
                         break;
+                    } else {
+                        if (mm.getShareOn() == 0) {
+                            treev_mainTreeView.changeNodeValue(treev_mainTreeView.getCurrentFocusNode(), mnContent);
+                            Log.d(TAG, "showEdit: 修改节点成功: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                        } else {
+                            Map<String, String> header = new HashMap<>();
+                            header.put("Cookie", CommonUtil.getUserCookie(this));
+                            header.put("Content-Type", "application/json");
+                            JSONObject jo = new JSONObject();
+                            jo.put("content", mnContent);
+                            String data = jo.toJSONString();
+                            MyHttpUtil.put(PublicConfig.url_put_editNode(mm.getShareId()
+                                    , treev_mainTreeView.getCurrentFocusNode().nId)
+                                    , header
+                                    , data
+                                    , new MyHttpUtil.HttpCallbackListener() {
+                                        @Override
+                                        public void beforeFinish(HttpURLConnection connection) {
+
+                                        }
+
+                                        @Override
+                                        public void onFinish(String response) {
+                                            System.out.println(response);
+                                            JSONObject jo = JSONObject.parseObject(response);
+                                            if (jo.getBoolean("status") == true) {
+                                                mHandler.post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        treev_mainTreeView.changeNodeValue(treev_mainTreeView.getCurrentFocusNode(), mnContent);
+                                                    }
+                                                });
+                                                Log.d(TAG, "showEdit: 修改节点成功 => " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                            } else {
+                                                Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
+                                                Log.d(TAG, "showEdit: 修改节点失败: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                                Snackbar.make(treev_mainTreeView, "修改失败", Snackbar.LENGTH_SHORT)
+                                                        .setAction("Action", null).show();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onError(Exception e, String response) {
+                                            e.printStackTrace();
+                                            System.out.println("response: " + response);
+                                            Log.d(TAG, "showEdit: 修改节点失败: " + (mm.getShareOn() == 0 ? "关共享模式" : "开共享模式"));
+                                            Snackbar.make(treev_mainTreeView, "修改节点失败", Snackbar.LENGTH_SHORT)
+                                                    .setAction("Action", null).show();
+                                        }
+                                    });
+                        }
                     }
-                    treev_mainTreeView.changeNodeValue(treev_mainTreeView.getCurrentFocusNode(), mnContent);
                     break;
             }
         });
@@ -366,17 +533,5 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         }
         return true;
     }
-
-//        /**
-//     * 更改节点内容
-//     * @param model
-//     * @param value
-//     */
-//    public void changeNodeValue(NodeModel<String> model, String value) {
-//        NodeView treeNodeView = (NodeView) treev_mainTreeView.findNodeViewFromNodeModel(model);
-//        NodeModel<String> treeNode = treeNodeView.getTreeNode();
-//        treeNode.setValue(value);
-//        treeNodeView.setTreeNode(treeNode);
-//    }
 
 }

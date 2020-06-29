@@ -177,6 +177,9 @@ public class MyHttpUtil {
                     connection.setConnectTimeout(8000);
                     connection.setReadTimeout(8000);
                     connection.setDoOutput(true);
+                    for (Map.Entry<String, String> h : header.entrySet()) {
+                        connection.setRequestProperty(h.getKey(), h.getValue());
+                    }
                     // 向服务器发送数据
                     connection.setRequestMethod("PUT");
                     DataOutputStream out = new DataOutputStream(connection.getOutputStream());
@@ -250,6 +253,9 @@ public class MyHttpUtil {
                     connection.setRequestMethod("DELETE");
                     connection.setConnectTimeout(8000);
                     connection.setReadTimeout(8000);
+                    for (Map.Entry<String, String> h : header.entrySet()) {
+                        connection.setRequestProperty(h.getKey(), h.getValue());
+                    }
                     // 得到服务器返回数据
                     //获得结果码
                     int responseCode = connection.getResponseCode();

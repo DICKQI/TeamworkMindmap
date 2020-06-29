@@ -89,11 +89,10 @@ public class PublicConfig {
     /**
      * 创建在线导图/本地首次开启共享
      *
-     * @param shareId
      * @return
      */
-    public static final String url_post_firstShareOn(final Long shareId) {
-        return "http://49.234.71.210/map/" + shareId + "/";
+    public static final String url_post_firstShareOn() {
+        return "http://49.234.71.210/map/new/";
     }
 
     /**
