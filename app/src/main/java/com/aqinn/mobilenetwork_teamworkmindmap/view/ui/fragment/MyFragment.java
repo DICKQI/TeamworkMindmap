@@ -136,6 +136,31 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
 
             }
         });
+        Handler mHandler1 = new Handler();
+        MyHttpUtil.get(PublicConfig.url_get_head(), header, new MyHttpUtil.HttpCallbackListener() {
+            @Override
+            public void beforeFinish(HttpURLConnection connection) {
+
+            }
+
+            @Override
+            public void onFinish(String response) {
+                JSONObject json = JSON.parseObject(response);
+                if (json.getBoolean("status")) {
+                    mHandler1.post(new Runnable() {
+                        @Override
+                        public void run() {
+//                            iv_userIcon.setImageBitmap(base64ToBitmap(json.getString("head")));
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(Exception e, String response) {
+
+            }
+        });
     }
 
     @Override
@@ -217,32 +242,8 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
 
     //base64转bitmap
     public static Bitmap base64ToBitmap(String base64Data) {
-        byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
+        byte[] bytes = Base64.decode(base64Data, Base64.URL_SAFE);
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
 
-    //监听Radio
-    private RadioGroup.OnCheckedChangeListener radioGrouplisten = new RadioGroup.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(RadioGroup group, int checkedId) {
-
-            int id = group.getCheckedRadioButtonId();
-            switch (group.getCheckedRadioButtonId()) {
-                case R.id.my_rdo_genderMan:
-//                    orientation = Orientation.landscape;
-//                    Log.i("orientation",orientation.toString());
-                    //Toast.makeText(PrintSettingActivity.this, orientation.toString(), Toast.LENGTH_SHORT).show();
-                    break;
-                case R.id.my_rdo_genderFemale:
-//                    orientation = Orientation.Portrait;
-//                    Log.i("orientation",orientation.toString());
-                    //Toast.makeText(PrintSettingActivity.this, orientation.toString(), Toast.LENGTH_SHORT).show();
-                    break;
-                case R.id.my_rdo_genderPrivate:
-                    break;
-                default:
-                    break;
-            }
-        }
-    };
 }
