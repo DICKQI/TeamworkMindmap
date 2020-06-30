@@ -51,7 +51,7 @@ import java.util.Map;
 public class IndexFragment extends Fragment {
 
     // 组件
-    private GridView gv_main;
+    public static GridView gv_main;
 
     // 其它
     private static final String TAG = "IndexFragment";

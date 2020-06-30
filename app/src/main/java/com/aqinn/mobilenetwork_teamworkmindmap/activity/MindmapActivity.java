@@ -68,6 +68,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     private Long mmId;
     private boolean isMe = true;
     private boolean enable = false;
+    private boolean flag = true;
     private boolean db_shareOn = false;
     private boolean http_shareOn = false;
     private Long shareId = -1L;
@@ -96,6 +97,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
             name = bundle.getString("name");
             mmId = bundle.getLong("mmId");
             isMe = bundle.getBoolean("isMe");
+            shareId = bundle.getLong("shareId");
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
@@ -121,7 +123,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
             }
         }).start();
 
-
+        flag = true;
         verifyEnable();
 
     }
@@ -144,7 +146,8 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                 6 如果请求出问题，图是他人的话，able=F
          */
         Mindmap db_mm = mmm.getMindmapByMmId(mmId);
-        shareId = db_mm.getShareId();
+        if (shareId == -1L || shareId == 0L)
+            shareId = db_mm.getShareId();
         db_shareOn = db_mm.getShareOn() == 0 ? false : true;
         http_shareOn = false;
         Map<String, String> header = new HashMap<>();
@@ -158,28 +161,41 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 
             @Override
             public void onFinish(String response) {
+                Log.d(TAG, "response: => " + response);
                 JSONObject jo = JSONObject.parseObject(response);
                 if (jo.getBoolean("status") == true) {
                     http_shareOn = true;
                     Log.d(TAG, "onFinish: 网络通畅, 目前是开协作模式");
                     enable = true;
+                    System.out.println("111111111111111111111");
+                    flag = false;
                 } else {
                     Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
                     if ("导图未开启共享".equals(jo.getString("errMsg"))) {
                         Log.d(TAG, "onFinish: 网络通畅, 目前是关协作模式");
                         if (isMe) {
                             enable = true;
+                            System.out.println("22222222222222222222222");
                         } else {
                             enable = false;
+                            System.out.println("3333333333333333333333333333");
                         }
+                        flag = false;
                     } else {
                         Log.d(TAG, "onFinish: 网络通畅, 但是请求出问题 response => " + response);
-                        if (isMe && db_shareOn)
+                        if (isMe && db_shareOn) {
                             enable = false;
-                        if (isMe && !db_shareOn)
+                            System.out.println("444444444444444444444444444");
+                        }
+                        if (isMe && !db_shareOn) {
                             enable = true;
-                        if (!isMe)
+                            System.out.println("555555555555555555555555");
+                        }
+                        if (!isMe) {
                             enable = false;
+                            System.out.println("666666666666666666666666666");
+                        }
+                        flag = false;
                     }
                 }
             }
@@ -188,12 +204,19 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
             public void onError(Exception e, String response) {
                 e.printStackTrace();
                 Log.d(TAG, "onFinish: 网络阻塞 response => " + response);
-                if (isMe && db_shareOn)
+                if (isMe && db_shareOn) {
                     enable = false;
-                if (isMe && !db_shareOn)
+                    System.out.println("77777777777777777777");
+                }
+                if (isMe && !db_shareOn) {
                     enable = true;
-                if (!isMe)
+                    System.out.println("8888888888888888888888888888");
+                }
+                if (!isMe) {
                     enable = false;
+                    System.out.println("999999999999999999999999999");
+                }
+                flag = false;
             }
         });
         return enable;
@@ -238,6 +261,9 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
 
     private void showEdit(String title, String content, int status) {
         verifyEnable();
+        while (flag) {
+            verifyEnable();
+        }
         if (!enable) {
             Snackbar.make(treev_mainTreeView, "目前是只读状态", Snackbar.LENGTH_SHORT)
                     .setAction("Action", null).show();

@@ -34,9 +34,10 @@ public class DBHelper extends SQLiteOpenHelper {
                 "_id INTEGER PRIMARY KEY autoincrement," +
                 "user_id long not null," +
                 "mm_id long not null," +
-                "is_me Integer not null default 1," +
-                "FOREIGN KEY(mm_id) REFERENCES tb_mindmap(_id)" +
+                "is_me Integer not null default 1" +
                 ")");
+//        "FOREIGN KEY(mm_id) REFERENCES tb_mindmap(_id)" +
+
     }
 
     @Override

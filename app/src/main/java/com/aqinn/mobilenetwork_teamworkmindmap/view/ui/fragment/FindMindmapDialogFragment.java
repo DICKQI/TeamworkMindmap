@@ -28,6 +28,8 @@ import com.aqinn.mobilenetwork_teamworkmindmap.R;
 import com.aqinn.mobilenetwork_teamworkmindmap.activity.MindmapActivity;
 import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
+import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindmapAdapter;
+import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
@@ -35,8 +37,12 @@ import com.aqinn.mobilenetwork_teamworkmindmap.vo.Mindmap;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static com.aqinn.mobilenetwork_teamworkmindmap.view.ui.fragment.IndexFragment.mma;
 
 /**
  * @author Aqinn
@@ -129,6 +135,9 @@ public class FindMindmapDialogFragment extends DialogFragment implements View.On
                                                     JSONObject joo = JSONObject.parseObject(response);
                                                     if (joo.getBoolean("status") == true) {
                                                         TreeModel<String> tm = mmm.json2tm(response);
+                                                        System.out.println("xxxxxxxxxxxxxxx ====>" +response);
+                                                        List<NodeModel<String>> list = tm.getNodeChildNodes(tm.getRootNode());
+                                                        System.out.println(list);
                                                         mHandler.post(new Runnable() {
                                                             @Override
                                                             public void run() {
@@ -136,13 +145,24 @@ public class FindMindmapDialogFragment extends DialogFragment implements View.On
                                                                 mm.setTm(tm);
                                                                 if (mmm.saveMindmap(mm)) {
                                                                     Log.d(TAG, "onFinish: 加上协作成功, 获取协作导图信息成功, 保存导图信息成功");
+                                                                    // TODO 后期待改进：这样直接更换一个Adapter有点low，
+                                                                    //  但是没办法，正常的notifyDataSetChanged()会把第一个"新建思维导图"给删掉
+                                                                    List<Mindmap> mindmapsTemp = new ArrayList<>();
+                                                                    mma.getMindmaps().add(1, mm);
+                                                                    for (int i = 0; i < mma.getMindmaps().size(); i++) {
+                                                                        mindmapsTemp.add(i, mma.getMindmaps().get(i));
+                                                                    }
+                                                                    mma = new MindmapAdapter(getActivity(), mindmapsTemp);
+                                                                    IndexFragment.gv_main.setAdapter(mma);
                                                                     Intent intent = new Intent(getActivity(), MindmapActivity.class);
                                                                     Bundle bundle = new Bundle();
                                                                     bundle.putLong("mmId", mm.getMmId());
                                                                     bundle.putString("name", mm.getName());
                                                                     bundle.putBoolean("isMe", false);
+                                                                    bundle.putLong("shareId", Long.valueOf(et_share_id.getText().toString()));
                                                                     intent.putExtras(bundle);
                                                                     startActivity(intent);
+                                                                    dismiss();
                                                                 } else {
                                                                     Log.d(TAG, "onFinish: 加上协作成功, 获取协作导图信息成功, 保存导图信息失败");
                                                                 }
@@ -150,20 +170,21 @@ public class FindMindmapDialogFragment extends DialogFragment implements View.On
                                                         });
                                                         Log.d(TAG, "onFinish: 加上协作成功, 获取协作导图信息成功");
                                                     } else {
-                                                        Log.d(TAG, "onError: 加入协作成功, 但是获取协作导图信息出错 response => " + response);
+                                                        Log.d(TAG, "onFinish: 加入协作成功, 但是获取协作导图信息出错 response => " + response);
                                                         Snackbar.make(al_find, "加入协作成功, 但是获取协作导图信息出错", Snackbar.LENGTH_SHORT)
                                                                 .setAction("Action", null).show();
-                                                    } 
+                                                    }
                                                 }
 
                                                 @Override
                                                 public void onError(Exception e, String response) {
-                                                    Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
+                                                    Log.d(TAG, "onError: errMsg => " + jo.getString("errMsg"));
                                                     Log.d(TAG, "onError: 加入协作成功, 但是获取协作导图信息请求失败 response => " + response);
                                                     Snackbar.make(al_find, "加入协作成功, 但是获取协作导图信息请求失败", Snackbar.LENGTH_SHORT)
                                                             .setAction("Action", null).show();
                                                 }
                                             });
+
                                     Log.d(TAG, "onFinish: 加入协作成功");
                                 } else {
                                     Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));

@@ -166,7 +166,7 @@ public class MindMapManager {
         for (int i = 0; i < ja.size(); i++) {
             JSONObject tempJo = (JSONObject) ja.get(i);
             NodeModel<String> nm = new NodeModel<>(tempJo.getString("content"));
-            nm.setMnId(tempJo.getLong("id"));
+            nm.setMnId(tempJo.getLong("nodeId"));
             nm.setpId(tempJo.getLong("parent_node"));
             nmsl.add(nm);
         }
@@ -177,7 +177,7 @@ public class MindMapManager {
             for (int j = 0; j < nmsl.size(); j++) {
                 if (nmsl.get(i) == nmsl.get(j))
                     continue;
-                if (nmsl.get(i).getMnId() == nmsl.get(j).getpId()) {
+                if (nmsl.get(i).getMnId().equals(nmsl.get(j).getpId())) {
                     nmsl.get(i).getChildNodes().add(nmsl.get(j));
                     nmsl.get(j).setParentNode(nmsl.get(i));
                 }
@@ -186,6 +186,7 @@ public class MindMapManager {
         if ("根节点出错".equals(String.valueOf(nmroot.getValue())))
             return null;
         TreeModel<String> tm = new TreeModel<>(nmroot);
+        Log.d(TAG, "json2tm: tm => " + tm.getNodeChildNodes(tm.getRootNode()));
         tm.setShareId(shareId);
         return tm;
     }
