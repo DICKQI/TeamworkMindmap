@@ -63,7 +63,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
     private String password;
     private String password2;
     private String errorString;
-    Context context = this;
+    public static Context context;
     private boolean isRemember_passwd = false;
     private boolean isRemember_user = false;
     //判断是否符合标准
@@ -77,9 +77,14 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
     //其它
     private FileUtil fileUtil = FileUtil.getInstance();
 
+    public static Context getContext() {
+        return context;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context=getApplicationContext();
 
         /**
          * TODO 获得写文件权限，暂时先写在这里
@@ -166,7 +171,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         bt_offLine.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View view) {
-                CommonUtil.setUser(getParent(), -1L);
+                CommonUtil.setUser(context, -1L);
                 CommonUtil.deleteUserCookie(context);
                 Intent intent = new Intent();
                 intent.setClass(LoginActivity.this, IndexActivity.class);
@@ -183,30 +188,6 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                 userEmail = edtTxt_userEmail.getText().toString().trim();
                 password = edtTxt_passwd.getText().toString().trim();
                 loginIn();
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (isLoginOK) {
-                    if (isRemember_user) {
-                        CommonUtil.setRememberUser(context, edtTxt_userEmail.getText().toString().trim());
-                    } else {
-                        CommonUtil.deleteRememberUser(context);
-                    }
-                    if (isRemember_passwd) {
-                        CommonUtil.setRememberPwd(context, edtTxt_passwd.getText().toString().trim());
-                    } else {
-                        CommonUtil.deleteRememberPwd(context);
-                    }
-                    Intent intent = new Intent();
-                    intent.setClass(LoginActivity.this, IndexActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Toast.makeText(context, "用户名或密码错误", Toast.LENGTH_SHORT).show();
-                }
             }
 
         });
@@ -250,25 +231,6 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                         password = edtTxt_passwd.getText().toString().trim();
                         password2 = edtTxt_passwd2.getText().toString().trim();
                         register_post();
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        if (isRegisterOK) {
-                            CommonUtil.deleteRememberUser(context);
-                            CommonUtil.setRememberUser(context, edtTxt_userEmail.getText().toString().trim());
-                            loginIn();
-                            Intent intent = new Intent();
-                            intent.setClass(LoginActivity.this, IndexActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            tv_verifyText.setText(errorString);
-                            tv_verifyText.setBackgroundColor(Color.RED);
-                            iv_verify.setImageResource(R.mipmap.ic_unverified);
-                        }
                     }
                 } else {
                     edtTxt_userEmail.setText("");
@@ -446,7 +408,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                             isEqual = true;
                             tv_verifyText.setBackgroundColor(Color.GREEN);
                         } else {
-                            tv_verifyText.setText("请输入正确的邮箱");
+                            tv_verifyText.setText("请输入正确不重复的邮箱");
                             tv_verifyText.setBackgroundColor(Color.RED);
                             iv_verify.setImageResource(R.mipmap.ic_unverified);
                         }
@@ -499,20 +461,52 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         jo.put("password", password);
         String json = jo.toJSONString();
         Map<String, String> header = new HashMap<>();
+        Handler mHandler = new Handler();
+        Handler mHandler2 = new Handler();
         MyHttpUtil.post(PublicConfig.url_post_login(), header, json, new MyHttpUtil.HttpCallbackListener() {
             @Override
             public void beforeFinish(HttpURLConnection connection) {
-                CommonUtil.setUserCookie(context, connection.getHeaderField("Set-Cookie"));
+                mHandler2.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        CommonUtil.setUserCookie(context, connection.getHeaderField("Set-Cookie"));
+                    }
+                });
             }
 
             @Override
             public void onFinish(String response) {
                 if (response != null) {
                     JSONObject json = JSON.parseObject(response);
-                    if (json.getBoolean("status")) {
-                        isLoginOK = true;
-                        CommonUtil.setUser(context, json.getLong("id"));
-                    }
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (json.getBoolean("status")) {
+                                isLoginOK = true;
+                                CommonUtil.setUser(context, json.getLong("id"));
+                            }
+                            if (isLoginOK) {
+                                if (isRemember_user) {
+                                    CommonUtil.setRememberUser(context, edtTxt_userEmail.getText().toString().trim());
+                                } else {
+                                    CommonUtil.deleteRememberUser(context);
+                                }
+                                if (isRemember_passwd) {
+                                    CommonUtil.setRememberPwd(context, edtTxt_passwd.getText().toString().trim());
+                                } else {
+                                    CommonUtil.deleteRememberPwd(context);
+                                }
+                                Intent intent = new Intent();
+                                intent.setClass(LoginActivity.this, IndexActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
+//                        MyFragment.initMydDshboard();
+                                finish();
+                            } else {
+                                Toast.makeText(context, "用户名或密码错误", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
                 }
             }
 
@@ -580,6 +574,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         jo.put("password", edtTxt_passwd2.getText().toString().trim());
         String json = jo.toJSONString();
         Map<String, String> header = new HashMap<>();
+        Handler mHandler = new Handler();
         MyHttpUtil.post(PublicConfig.url_post_register(), header, json, new MyHttpUtil.HttpCallbackListener() {
             @Override
             public void beforeFinish(HttpURLConnection connection) {
@@ -590,12 +585,33 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
             public void onFinish(String response) {
                 if (response != null) {
                     JSONObject json = JSON.parseObject(response);
-                    if (json.getBoolean("status")) {
-                        isRegisterOK = true;
-                    } else {
-                        isRegisterOK = false;
-                        errorString = json.getString("errMsg");
-                    }
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (json.getBoolean("status")) {
+                                isRegisterOK = true;
+                            } else {
+                                isRegisterOK = false;
+                                errorString = json.getString("errMsg");
+                            }
+                            if (isRegisterOK) {
+                                CommonUtil.deleteRememberUser(context);
+                                CommonUtil.deleteUserCookie(context);
+                                isRemember_passwd = true;
+                                isRemember_user = true;
+                                loginIn();
+                                Intent intent = new Intent();
+                                intent.setClass(LoginActivity.this, IndexActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                tv_verifyText.setText(errorString);
+                                tv_verifyText.setBackgroundColor(Color.RED);
+                                iv_verify.setImageResource(R.mipmap.ic_unverified);
+                            }
+                        }
+                    });
                 }
             }
 

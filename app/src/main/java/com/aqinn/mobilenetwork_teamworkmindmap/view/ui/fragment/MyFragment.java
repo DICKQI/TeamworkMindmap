@@ -13,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -27,10 +28,12 @@ import android.widget.RadioGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.room.Index;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.activity.IndexActivity;
 import com.aqinn.mobilenetwork_teamworkmindmap.activity.LoginActivity;
 import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
@@ -53,17 +56,17 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
 
     public static ImageView iv_userIcon;
     public static EditText edtTxt_nickname;
-    private EditText edtTxt_account;
+    public static EditText edtTxt_account;
     public static EditText edtTxt_oldPasswd;
     public static EditText edtTxt_newPasswd;
     public static EditText edtTxt_signature;
-    private EditText edtTxt_date;
+    public static EditText edtTxt_date;
     public static RadioGroup rdoGp_gender;
     public static RadioButton rdoBt_gender_man;
     public static RadioButton rdoBt_gender_female;
     public static RadioButton rdoBt_gender_private;
+    public static String img_base64 = "";
     private File cropImageFile;
-    private Handler mHandler = new Handler();
 
     public static MyFragment newInstance() {
         MyFragment fragment = new MyFragment();
@@ -100,8 +103,13 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
 //        rdoGp_gender.setOnCheckedChangeListener(radioGrouplisten);
         iv_userIcon.setOnClickListener(this);
 
+        initMydDshboard();
+
+    }
+    public static void initMydDshboard() {
         Map<String, String> header = new HashMap<>();
-        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
+        header.put("Cookie", CommonUtil.getUserCookie(LoginActivity.getContext()));
+        Handler mHandler = new Handler();
         MyHttpUtil.get(PublicConfig.url_get_dashboard(), header, new MyHttpUtil.HttpCallbackListener() {
             @Override
             public void beforeFinish(HttpURLConnection connection) {
@@ -150,7 +158,8 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
                     mHandler1.post(new Runnable() {
                         @Override
                         public void run() {
-//                            iv_userIcon.setImageBitmap(base64ToBitmap(json.getString("head")));
+                            img_base64 = bitmapToBase64(toRoundBitmap(base64ToBitmap(json.getString("head"))));
+                            iv_userIcon.setImageBitmap(toRoundBitmap(base64ToBitmap(json.getString("head"))));
                         }
                     });
                 }
@@ -188,8 +197,8 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
                     iv_userIcon.setImageURI(data.getData());
                     Bitmap bitmap = ((BitmapDrawable)iv_userIcon.getDrawable()).getBitmap();
                     bitmap  = Bitmap.createScaledBitmap(bitmap,120,120,true);
-                    iv_userIcon.setImageBitmap(toRoundBitmap(bitmap));
                     String bit = bitmapToBase64(toRoundBitmap(bitmap));
+                    iv_userIcon.setImageBitmap(toRoundBitmap(base64ToBitmap(bit)));
                     break;
 
                 default:
@@ -211,7 +220,7 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
     }
 
     //bitmap转base64
-    private static String bitmapToBase64(Bitmap bitmap) {
+    public static String bitmapToBase64(Bitmap bitmap) {
         String result = null;
         ByteArrayOutputStream baos = null;
         try {
@@ -242,7 +251,7 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
 
     //base64转bitmap
     public static Bitmap base64ToBitmap(String base64Data) {
-        byte[] bytes = Base64.decode(base64Data, Base64.URL_SAFE);
+        byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
 
