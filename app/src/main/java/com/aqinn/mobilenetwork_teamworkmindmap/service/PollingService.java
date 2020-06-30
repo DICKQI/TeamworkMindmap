@@ -40,6 +40,8 @@ public class PollingService extends Service {
     private Notification mNotification;
     private NotificationManager mManager;
 
+    private static Long shareId_;
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -63,8 +65,10 @@ public class PollingService extends Service {
         if (shareId != -1L) {
             Log.d(TAG, "onStartCommand: shareId获取正常, 轮询服务正常启动");
             new PollingThread(shareId).start();
+            shareId_ = shareId;
         } else {
-            Log.d(TAG, "onStartCommand: shareId获取出错, 轮询服务取消启动");
+            Log.d(TAG, "onStartCommand: shareId获取出错, 轮询服务使用上次shareId继续执行");
+            new PollingThread(shareId_).start();
         }
         return super.onStartCommand(intent, flags, startId);
     }
@@ -109,8 +113,8 @@ public class PollingService extends Service {
             Log.d(TAG, "onDestroy: 轮询更新节点服务开启");
             count++;
             //当计数能被5整除时弹出通知
-            if (count % 5 == 0) {
-                Log.d(TAG, "run: 第" + (count / 5 + 1) + "次轮询开始");
+            if (count % 1 == 0) {
+                Log.d(TAG, "run: 第" + (count / 1 + 1) + "次轮询开始");
                 if (pollingSuccessCallBack != null) {
                     Map<String, String> header = new HashMap<>();
                     header.put("Cookie", CommonUtil.getUserCookie(getApplicationContext()));
@@ -126,28 +130,30 @@ public class PollingService extends Service {
                                     JSONObject jo = JSONObject.parseObject(response);
                                     boolean status = jo.getBoolean("status");
                                     if (status) {
-                                        Log.d(TAG, "run: 第" + (count / 5 + 1) + "次轮询成功");
+                                        Log.d(TAG, "run: 第" + (count / 1 + 1) + "次轮询成功");
                                     } else {
-                                        Log.d(TAG, "run: 第" + (count / 5 + 1) + "次轮询出错");
+                                        Log.d(TAG, "run: 第" + (count / 1 + 1) + "次轮询出错");
                                         Log.d(TAG, "run: 轮询出错信息 => " + jo.getString("errMsg"));
                                     }
                                     Long shareId = jo.getInteger("shareId").longValue();
                                     String name = jo.getString("name");
                                     String auth = jo.getString("auth");
+                                    Log.d(TAG, "onFinish: " + response);
                                     TreeModel<String> tm = mmm.json2tm(response);
+                                    Log.d(TAG, "onFinish: " + tm.getNodeChildNodes(tm.getRootNode()));
                                     pollingSuccessCallBack.onSuccess(tm);
                                 }
 
                                 @Override
                                 public void onError(Exception e, String response) {
-                                    Log.d(TAG, "run: 第" + (count / 5 + 1) + "次轮询失败");
+                                    Log.d(TAG, "run: 第" + (count / 1 + 1) + "次轮询失败");
                                     e.printStackTrace();
                                     Log.d(TAG, "run: 轮询失败返回信息 => " + response);
                                     pollingSuccessCallBack.onError(e, response);
                                 }
                             });
                 } else {
-                    Log.d(TAG, "run: 由于未设置处理方法, 第" + (count / 5 + 1) + "次轮询并未继续执行");
+                    Log.d(TAG, "run: 由于未设置处理方法, 第" + (count / 1 + 1) + "次轮询并未继续执行");
                 }
             }
         }

@@ -9,6 +9,7 @@ import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -30,10 +31,12 @@ import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.controller.MindMapManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.NodeModel;
 import com.aqinn.mobilenetwork_teamworkmindmap.model.TreeModel;
+import com.aqinn.mobilenetwork_teamworkmindmap.service.PollingService;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.DensityUtils;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.FileUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.MyHttpUtil;
+import com.aqinn.mobilenetwork_teamworkmindmap.util.PollingUtil;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.NodeView;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.RightTreeLayoutManager;
 import com.aqinn.mobilenetwork_teamworkmindmap.view.mindmap.TreeView;
@@ -47,7 +50,9 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -78,6 +83,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
     private MindMapManager mmm = MindMapManager.getInstance();
     private FileUtil fileUtil = FileUtil.getInstance();
     private Handler mHandler = new Handler();
+    private NodeModel nmroot;
     private Mindmap mm;
     private float x_down = -1, y_down = -1, x_down_fbts = -1, y_down_fbts = -1;
     private int[] rl_fbts_location = new int[2];
@@ -126,6 +132,114 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         flag = true;
         verifyEnable();
 
+//        PollingUtil.teamworkBegin(this, shareId, 3, new PollingService.PollingSuccessCallBack() {
+//            @Override
+//            public void onSuccess(TreeModel<String> tm) {
+//                Log.d("biu", "onSuccess");
+//                List<NodeModel<String>> nmsl = tm.getNodeChildNodes(tm.getRootNode());
+//                nmsl.add(tm.getRootNode());
+//                NodeModel nmroot = new NodeModel("根节点出错");
+//                for (int i = 0; i < nmsl.size(); i++) {
+//                    if (nmsl.get(i).pId == 0L)
+//                        nmroot = nmsl.get(i);
+//                    for (int j = 0; j < nmsl.size(); j++) {
+//                        if (nmsl.get(i) == nmsl.get(j))
+//                            continue;
+//                        if (nmsl.get(i).getMnId().equals(nmsl.get(j).getpId())) {
+//                            nmsl.get(i).getChildNodes().add(nmsl.get(j));
+//                            nmsl.get(j).setParentNode(nmsl.get(i));
+//                        }
+//                    }
+//                }
+//                treev_mainTreeView.getTreeModel().setRootNode(nmroot);
+//            }
+//            @Override
+//            public void onError(Exception e, String response) {
+//                e.printStackTrace();
+//                Log.d("biu", "onError: response => " + response);
+//            }
+//        });
+
+        if (shareId != 0L || shareId != -1L) {
+            sync();
+        }
+
+    }
+
+
+    private Handler mmHandler = new Handler(Looper.getMainLooper()); // 全局变量
+    private Runnable mTimeCounterRunnable;
+
+    private void sync() {
+        mTimeCounterRunnable = new Runnable() {
+            @Override
+            public void run() {//在此添加需轮寻的接口
+                Map<String, String> header = new HashMap<>();
+                header.put("Cookie", CommonUtil.getUserCookie(getApplicationContext()));
+                MyHttpUtil.get(PublicConfig.url_get_getMindmapDetail(shareId)
+                        , header
+                        , new MyHttpUtil.HttpCallbackListener() {
+                            @Override
+                            public void beforeFinish(HttpURLConnection connection) {
+                            }
+
+                            @Override
+                            public void onFinish(String response) {
+                                JSONObject jo = JSONObject.parseObject(response);
+                                boolean status = jo.getBoolean("status");
+                                if (status) {
+                                    Log.d(TAG, "run: 第次轮询成功");
+                                    TreeModel<String> tm = mmm.json2tm(response);
+                                    List<NodeModel<String>> nmsl = tm.getNodeChildNodes(tm.getRootNode());
+                                    nmsl.add(tm.getRootNode());
+                                    nmroot = new NodeModel("根节点出错");
+                                    for (int i = 0; i < nmsl.size(); i++) {
+                                        if (nmsl.get(i).pId == 0L)
+                                            nmroot = nmsl.get(i);
+                                        for (int j = 0; j < nmsl.size(); j++) {
+                                            if (nmsl.get(i) == nmsl.get(j))
+                                                continue;
+                                            if (nmsl.get(i).getMnId().equals(nmsl.get(j).getpId())) {
+                                                nmsl.get(i).getChildNodes().add(nmsl.get(j));
+                                                nmsl.get(j).setParentNode(nmsl.get(i));
+                                            }
+                                        }
+                                    }
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            treev_mainTreeView.getTreeModel().setRootNode(nmroot);
+                                        }
+                                    });
+                                } else {
+                                    Log.d(TAG, "run: 第次轮询出错");
+                                    Log.d(TAG, "run: 轮询出错信息 => " + jo.getString("errMsg"));
+                                }
+                                Long shareId = jo.getInteger("shareId").longValue();
+                                String name = jo.getString("name");
+                                String auth = jo.getString("auth");
+                                Log.d(TAG, "onFinish: " + response);
+                                TreeModel<String> tm = mmm.json2tm(response);
+                                Log.d(TAG, "onFinish: " + tm.getNodeChildNodes(tm.getRootNode()));
+                            }
+
+                            @Override
+                            public void onError(Exception e, String response) {
+                                Log.d(TAG, "run: 第次轮询失败");
+                                e.printStackTrace();
+                                Log.d(TAG, "run: 轮询失败返回信息 => " + response);
+                            }
+                        });
+                mmHandler.postDelayed(this, 5 * 1000);
+            }
+        };
+        mmHandler.postDelayed(mTimeCounterRunnable, 5 * 1000);
+
+    }
+
+
+    private void resetTree(NodeModel<String> nm) {
+        treev_mainTreeView.addSubNode(nm.getnId(), nm.getValue());
     }
 
     @Override
@@ -407,6 +521,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                                             public void beforeFinish(HttpURLConnection connection) {
 
                                             }
+
                                             @Override
                                             public void onFinish(String response) {
                                                 System.out.println(response);
@@ -618,5 +733,11 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         return true;
     }
 
-
+    @Override
+    protected void onPause() {
+        super.onPause();
+//        PollingUtil.stopTeamwork(this);
+        //关闭定时任务
+        mmHandler.removeCallbacks(mTimeCounterRunnable);
+    }
 }

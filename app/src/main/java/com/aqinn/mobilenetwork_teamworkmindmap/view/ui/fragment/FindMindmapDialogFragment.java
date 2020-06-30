@@ -141,7 +141,7 @@ public class FindMindmapDialogFragment extends DialogFragment implements View.On
                                                         mHandler.post(new Runnable() {
                                                             @Override
                                                             public void run() {
-                                                                Mindmap mm = mmm.createMindmap(createUserId, CommonUtil.getUser(getActivity()), mapName, false);
+                                                                Mindmap mm = mmm.createMindmap(CommonUtil.getUser(getActivity()),createUserId, mapName, false);
                                                                 mm.setTm(tm);
                                                                 if (mmm.saveMindmap(mm)) {
                                                                     Log.d(TAG, "onFinish: 加上协作成功, 获取协作导图信息成功, 保存导图信息成功");
@@ -159,7 +159,7 @@ public class FindMindmapDialogFragment extends DialogFragment implements View.On
                                                                     bundle.putLong("mmId", mm.getMmId());
                                                                     bundle.putString("name", mm.getName());
                                                                     bundle.putBoolean("isMe", false);
-                                                                    bundle.putLong("shareId", Long.valueOf(et_share_id.getText().toString()));
+                                                                    bundle.putLong("shareId", Long.parseLong(et_share_id.getText().toString()));
                                                                     intent.putExtras(bundle);
                                                                     startActivity(intent);
                                                                     dismiss();

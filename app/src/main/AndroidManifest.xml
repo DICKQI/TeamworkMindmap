@@ -28,6 +28,10 @@
             android:launchMode="singleTask">
 
         </activity>
+        <service
+            android:name=".service.PollingService"
+            android:enabled="true"
+            android:exported="true"/>
         <activity android:name=".activity.TestActivity">
 
         </activity>
