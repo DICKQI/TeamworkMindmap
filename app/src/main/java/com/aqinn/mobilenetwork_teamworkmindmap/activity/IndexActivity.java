@@ -82,14 +82,19 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
     private boolean optionMenuOn = false;  //标示是否要显示optionmenu
     private Menu mMenu;
     private String sex = "保密";
-    private Context context = this;
+    public static Context context;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_index);
         initAllView();
+        context=getApplicationContext();
         CommonUtil.verifyStoragePermissions(this);
+    }
+
+    public static Context getContext() {
+        return context;
     }
 
     @Override
@@ -123,7 +128,7 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
         rg_main.setOnCheckedChangeListener(myOnCheckedChangeListener);
         iv_cloud.setOnClickListener(this);
 
-//        MyFragment.rdoGp_gender.setOnCheckedChangeListener(radioGrouplisten);
+        MyFragment.initMydDshboard();
     }
 
     private void setRadioButton(int drawableId, RadioButton radioButton) {
@@ -181,129 +186,133 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.mi_update:
-                Map<String, String> update_header = new HashMap<>();
-                update_header.put("Cookie", CommonUtil.getUserCookie(this));
-                com.alibaba.fastjson.JSONObject jo = new JSONObject();
-                if (MyFragment.edtTxt_nickname.getText().toString().trim().equals(""))
-                    Toast.makeText(context, "请输入昵称", Toast.LENGTH_SHORT).show();
-                else {
-                    jo.put("nickname", MyFragment.edtTxt_nickname.getText().toString().trim());
-                    if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderMan)
-                        sex = "男";
-                    else if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderFemale)
-                        sex = "女";
-                    else
-                        sex = "保密";
-                    jo.put("sex", sex);
-                    jo.put("signature", MyFragment.edtTxt_signature.getText().toString().trim());
-                    Handler mHandler = new Handler();
-                    MyHttpUtil.put(PublicConfig.url_put_dashboard(), update_header, jo.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
-                        @Override
-                        public void beforeFinish(HttpURLConnection connection) {
+                if (CommonUtil.getUserCookie(context)!=null) {
+                    Map<String, String> update_header = new HashMap<>();
+                    update_header.put("Cookie", CommonUtil.getUserCookie(this));
+                    com.alibaba.fastjson.JSONObject jo = new JSONObject();
+                    if (MyFragment.edtTxt_nickname.getText().toString().trim().equals(""))
+                        Toast.makeText(context, "请输入昵称", Toast.LENGTH_SHORT).show();
+                    else {
+                        jo.put("nickname", MyFragment.edtTxt_nickname.getText().toString().trim());
+                        if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderMan)
+                            sex = "男";
+                        else if (MyFragment.rdoGp_gender.getCheckedRadioButtonId() == R.id.my_rdo_genderFemale)
+                            sex = "女";
+                        else
+                            sex = "保密";
+                        jo.put("sex", sex);
+                        jo.put("signature", MyFragment.edtTxt_signature.getText().toString().trim());
+                        Handler mHandler = new Handler();
+                        MyHttpUtil.put(PublicConfig.url_put_dashboard(), update_header, jo.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
+                            @Override
+                            public void beforeFinish(HttpURLConnection connection) {
 
-                        }
+                            }
 
-                        @Override
-                        public void onFinish(String response) {
-                            JSONObject json = JSON.parseObject(response);
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (json.getBoolean("status")) {
-                                        Toast.makeText(context, "更改成功", Toast.LENGTH_SHORT).show();
-                                    } else {
-                                    }
-                                }
-                            });
-
-                        }
-
-                        @Override
-                        public void onError(Exception e, String response) {
-
-                        }
-                    });
-                }
-                if (MyFragment.edtTxt_oldPasswd.getText().toString().trim().length() > 5 && MyFragment.edtTxt_newPasswd.getText().toString().trim().length() > 5) {
-                    Pattern pattern = Pattern.compile("([a-z]|[A-Z])*");
-                    Pattern pattern1 = Pattern.compile("[0-9]*");
-                    Matcher matcher = pattern.matcher(MyFragment.edtTxt_newPasswd.getText().toString().trim());
-                    Matcher matcher1 = pattern1.matcher((MyFragment.edtTxt_newPasswd.getText().toString().trim()));
-                    if (matcher.find()) {
-                        if (matcher1.find()) {
-                            Map<String, String> password_header = new HashMap<>();
-                            password_header.put("Cookie", CommonUtil.getUserCookie(this));
-                            com.alibaba.fastjson.JSONObject json = new JSONObject();
-                            json.put("oldPassword", MyFragment.edtTxt_oldPasswd.getText().toString().trim());
-                            json.put("newPassword", MyFragment.edtTxt_newPasswd.getText().toString().trim());
-                            Handler mHandler2 = new Handler();
-                            MyHttpUtil.post(PublicConfig.url_put_dashboard(), password_header, json.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
-                                @Override
-                                public void beforeFinish(HttpURLConnection connection) {
-
-                                }
-
-                                @Override
-                                public void onFinish(String response) {
-                                    JSONObject json = JSON.parseObject(response);
-                                    mHandler2.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (json.getBoolean("status")) {
-                                                Toast.makeText(context, "更改密码成功", Toast.LENGTH_SHORT).show();
-                                                MyFragment.edtTxt_newPasswd.setText("");
-                                                MyFragment.edtTxt_oldPasswd.setText("");
-                                            } else
-                                                Toast.makeText(context, "更改密码失败,检查密码是否正确", Toast.LENGTH_SHORT).show();
+                            @Override
+                            public void onFinish(String response) {
+                                JSONObject json = JSON.parseObject(response);
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (json.getBoolean("status")) {
+                                            Toast.makeText(context, "更改成功", Toast.LENGTH_SHORT).show();
+                                        } else {
                                         }
-                                    });
+                                    }
+                                });
 
-                                }
+                            }
 
-                                @Override
-                                public void onError(Exception e, String response) {
+                            @Override
+                            public void onError(Exception e, String response) {
 
-                                }
-                            });
+                            }
+                        });
+                    }
+                    if (MyFragment.edtTxt_oldPasswd.getText().toString().trim().length() > 5 && MyFragment.edtTxt_newPasswd.getText().toString().trim().length() > 5) {
+                        Pattern pattern = Pattern.compile("([a-z]|[A-Z])*");
+                        Pattern pattern1 = Pattern.compile("[0-9]*");
+                        Matcher matcher = pattern.matcher(MyFragment.edtTxt_newPasswd.getText().toString().trim());
+                        Matcher matcher1 = pattern1.matcher((MyFragment.edtTxt_newPasswd.getText().toString().trim()));
+                        if (matcher.find()) {
+                            if (matcher1.find()) {
+                                Map<String, String> password_header = new HashMap<>();
+                                password_header.put("Cookie", CommonUtil.getUserCookie(this));
+                                com.alibaba.fastjson.JSONObject json = new JSONObject();
+                                json.put("oldPassword", MyFragment.edtTxt_oldPasswd.getText().toString().trim());
+                                json.put("newPassword", MyFragment.edtTxt_newPasswd.getText().toString().trim());
+                                Handler mHandler2 = new Handler();
+                                MyHttpUtil.post(PublicConfig.url_put_dashboard(), password_header, json.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
+                                    @Override
+                                    public void beforeFinish(HttpURLConnection connection) {
+
+                                    }
+
+                                    @Override
+                                    public void onFinish(String response) {
+                                        JSONObject json = JSON.parseObject(response);
+                                        mHandler2.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                if (json.getBoolean("status")) {
+                                                    Toast.makeText(context, "更改密码成功", Toast.LENGTH_SHORT).show();
+                                                    MyFragment.edtTxt_newPasswd.setText("");
+                                                    MyFragment.edtTxt_oldPasswd.setText("");
+                                                } else
+                                                    Toast.makeText(context, "更改密码失败,检查密码是否正确", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e, String response) {
+
+                                    }
+                                });
+                            } else
+                                Toast.makeText(context, "请输入正确的密码（包含字母和数字,6位或以上）", Toast.LENGTH_SHORT).show();
                         } else
                             Toast.makeText(context, "请输入正确的密码（包含字母和数字,6位或以上）", Toast.LENGTH_SHORT).show();
-                    } else
-                        Toast.makeText(context, "请输入正确的密码（包含字母和数字,6位或以上）", Toast.LENGTH_SHORT).show();
+                    }
+                    if (MyFragment.img_base64.equals(MyFragment.bitmapToBase64(((BitmapDrawable) MyFragment.iv_userIcon.getDrawable()).getBitmap()))) {
+                    } else {
+                        Map<String, String> head_header = new HashMap<>();
+                        head_header.put("Cookie", CommonUtil.getUserCookie(this));
+                        com.alibaba.fastjson.JSONObject headjson = new JSONObject();
+                        headjson.put("head", MyFragment.bitmapToBase64(((BitmapDrawable) MyFragment.iv_userIcon.getDrawable()).getBitmap()));
+                        Handler mHandler3 = new Handler();
+                        MyHttpUtil.put(PublicConfig.url_put_head(), head_header, headjson.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
+                            @Override
+                            public void beforeFinish(HttpURLConnection connection) {
+
+                            }
+
+                            @Override
+                            public void onFinish(String response) {
+                                JSONObject json = JSON.parseObject(response);
+                                mHandler3.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (json.getBoolean("status")) {
+                                            Toast.makeText(context, "更改头像成功", Toast.LENGTH_SHORT).show();
+                                        } else
+                                            Toast.makeText(context, "更改头像失败", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+                            }
+
+                            @Override
+                            public void onError(Exception e, String response) {
+
+                            }
+                        });
+                    }
                 }
-                if (MyFragment.img_base64.equals(MyFragment.bitmapToBase64(((BitmapDrawable)MyFragment.iv_userIcon.getDrawable()).getBitmap()))){
-                }else {
-                    Map<String, String> head_header = new HashMap<>();
-                    head_header.put("Cookie", CommonUtil.getUserCookie(this));
-                    com.alibaba.fastjson.JSONObject headjson = new JSONObject();
-                    headjson.put("head", MyFragment.bitmapToBase64(((BitmapDrawable)MyFragment.iv_userIcon.getDrawable()).getBitmap()));
-                    Handler mHandler3 = new Handler();
-                    MyHttpUtil.put(PublicConfig.url_put_head(), head_header, headjson.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
-                        @Override
-                        public void beforeFinish(HttpURLConnection connection) {
-
-                        }
-
-                        @Override
-                        public void onFinish(String response) {
-                            JSONObject json = JSON.parseObject(response);
-                            mHandler3.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (json.getBoolean("status")) {
-                                        Toast.makeText(context, "更改头像成功", Toast.LENGTH_SHORT).show();
-                                    } else
-                                        Toast.makeText(context, "更改头像失败", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-
-                        }
-
-                        @Override
-                        public void onError(Exception e, String response) {
-
-                        }
-                    });
-                }
+                else
+                    Toast.makeText(context, "请先注册再使用该页面", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.mi_setting:
                 Snackbar.make(root, "前往设置页面功能敬请期待", Snackbar.LENGTH_SHORT)
@@ -385,6 +394,7 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
                 setRadioButton(R.drawable.me_unselect, rb_my);
                 iv_cloud.setVisibility(View.VISIBLE);
             } else {
+                MyFragment.initMydDshboard();
                 setRadioButton(R.drawable.index_unselect, rb_index);
                 setRadioButton(R.drawable.me_select, rb_my);
                 iv_cloud.setVisibility(View.INVISIBLE);

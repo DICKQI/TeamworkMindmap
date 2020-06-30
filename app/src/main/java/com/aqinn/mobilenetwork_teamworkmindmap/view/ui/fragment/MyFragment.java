@@ -13,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -27,10 +28,12 @@ import android.widget.RadioGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.room.Index;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aqinn.mobilenetwork_teamworkmindmap.R;
+import com.aqinn.mobilenetwork_teamworkmindmap.activity.IndexActivity;
 import com.aqinn.mobilenetwork_teamworkmindmap.activity.LoginActivity;
 import com.aqinn.mobilenetwork_teamworkmindmap.config.PublicConfig;
 import com.aqinn.mobilenetwork_teamworkmindmap.util.CommonUtil;
@@ -53,18 +56,17 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
 
     public static ImageView iv_userIcon;
     public static EditText edtTxt_nickname;
-    private EditText edtTxt_account;
+    public static EditText edtTxt_account;
     public static EditText edtTxt_oldPasswd;
     public static EditText edtTxt_newPasswd;
     public static EditText edtTxt_signature;
-    private EditText edtTxt_date;
+    public static EditText edtTxt_date;
     public static RadioGroup rdoGp_gender;
     public static RadioButton rdoBt_gender_man;
     public static RadioButton rdoBt_gender_female;
     public static RadioButton rdoBt_gender_private;
     public static String img_base64 = "";
     private File cropImageFile;
-    private Handler mHandler = new Handler();
 
     public static MyFragment newInstance() {
         MyFragment fragment = new MyFragment();
@@ -101,8 +103,13 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
 //        rdoGp_gender.setOnCheckedChangeListener(radioGrouplisten);
         iv_userIcon.setOnClickListener(this);
 
+        initMydDshboard();
+
+    }
+    public static void initMydDshboard() {
         Map<String, String> header = new HashMap<>();
-        header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
+        header.put("Cookie", CommonUtil.getUserCookie(LoginActivity.getContext()));
+        Handler mHandler = new Handler();
         MyHttpUtil.get(PublicConfig.url_get_dashboard(), header, new MyHttpUtil.HttpCallbackListener() {
             @Override
             public void beforeFinish(HttpURLConnection connection) {

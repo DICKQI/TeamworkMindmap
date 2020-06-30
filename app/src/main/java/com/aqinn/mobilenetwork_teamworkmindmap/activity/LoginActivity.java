@@ -63,7 +63,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
     private String password;
     private String password2;
     private String errorString;
-    Context context = this;
+    public static Context context;
     private boolean isRemember_passwd = false;
     private boolean isRemember_user = false;
     //判断是否符合标准
@@ -77,9 +77,14 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
     //其它
     private FileUtil fileUtil = FileUtil.getInstance();
 
+    public static Context getContext() {
+        return context;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context=getApplicationContext();
 
         /**
          * TODO 获得写文件权限，暂时先写在这里
@@ -457,10 +462,16 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
         String json = jo.toJSONString();
         Map<String, String> header = new HashMap<>();
         Handler mHandler = new Handler();
+        Handler mHandler2 = new Handler();
         MyHttpUtil.post(PublicConfig.url_post_login(), header, json, new MyHttpUtil.HttpCallbackListener() {
             @Override
             public void beforeFinish(HttpURLConnection connection) {
-                CommonUtil.setUserCookie(context, connection.getHeaderField("Set-Cookie"));
+                mHandler2.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        CommonUtil.setUserCookie(context, connection.getHeaderField("Set-Cookie"));
+                    }
+                });
             }
 
             @Override
@@ -489,6 +500,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                                 intent.setClass(LoginActivity.this, IndexActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 startActivity(intent);
+//                        MyFragment.initMydDshboard();
                                 finish();
                             } else {
                                 Toast.makeText(context, "用户名或密码错误", Toast.LENGTH_SHORT).show();
@@ -586,7 +598,7 @@ public class LoginActivity extends AppCompatActivity implements CompoundButton.O
                                 CommonUtil.deleteRememberUser(context);
                                 CommonUtil.deleteUserCookie(context);
                                 isRemember_passwd = true;
-                                isRemember_user = false;
+                                isRemember_user = true;
                                 loginIn();
                                 Intent intent = new Intent();
                                 intent.setClass(LoginActivity.this, IndexActivity.class);
