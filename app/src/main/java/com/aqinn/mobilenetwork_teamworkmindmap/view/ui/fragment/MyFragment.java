@@ -62,6 +62,7 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
     public static RadioButton rdoBt_gender_man;
     public static RadioButton rdoBt_gender_female;
     public static RadioButton rdoBt_gender_private;
+    public static String img_base64 = "";
     private File cropImageFile;
     private Handler mHandler = new Handler();
 
@@ -150,7 +151,8 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
                     mHandler1.post(new Runnable() {
                         @Override
                         public void run() {
-//                            iv_userIcon.setImageBitmap(base64ToBitmap(json.getString("head")));
+                            img_base64 = bitmapToBase64(toRoundBitmap(base64ToBitmap(json.getString("head"))));
+                            iv_userIcon.setImageBitmap(toRoundBitmap(base64ToBitmap(json.getString("head"))));
                         }
                     });
                 }
@@ -188,8 +190,8 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
                     iv_userIcon.setImageURI(data.getData());
                     Bitmap bitmap = ((BitmapDrawable)iv_userIcon.getDrawable()).getBitmap();
                     bitmap  = Bitmap.createScaledBitmap(bitmap,120,120,true);
-                    iv_userIcon.setImageBitmap(toRoundBitmap(bitmap));
                     String bit = bitmapToBase64(toRoundBitmap(bitmap));
+                    iv_userIcon.setImageBitmap(toRoundBitmap(base64ToBitmap(bit)));
                     break;
 
                 default:
@@ -211,7 +213,7 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
     }
 
     //bitmap转base64
-    private static String bitmapToBase64(Bitmap bitmap) {
+    public static String bitmapToBase64(Bitmap bitmap) {
         String result = null;
         ByteArrayOutputStream baos = null;
         try {
@@ -242,7 +244,7 @@ public class MyFragment extends Fragment  implements View.OnClickListener{
 
     //base64转bitmap
     public static Bitmap base64ToBitmap(String base64Data) {
-        byte[] bytes = Base64.decode(base64Data, Base64.URL_SAFE);
+        byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
 

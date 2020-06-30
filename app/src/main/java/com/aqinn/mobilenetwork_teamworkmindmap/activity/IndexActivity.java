@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -252,7 +254,7 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
                                                 MyFragment.edtTxt_newPasswd.setText("");
                                                 MyFragment.edtTxt_oldPasswd.setText("");
                                             } else
-                                                Toast.makeText(context, "更改密码失败", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(context, "更改密码失败,检查密码是否正确", Toast.LENGTH_SHORT).show();
                                         }
                                     });
 
@@ -267,6 +269,40 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
                             Toast.makeText(context, "请输入正确的密码（包含字母和数字,6位或以上）", Toast.LENGTH_SHORT).show();
                     } else
                         Toast.makeText(context, "请输入正确的密码（包含字母和数字,6位或以上）", Toast.LENGTH_SHORT).show();
+                }
+                if (MyFragment.img_base64.equals(MyFragment.bitmapToBase64(((BitmapDrawable)MyFragment.iv_userIcon.getDrawable()).getBitmap()))){
+                }else {
+                    Map<String, String> head_header = new HashMap<>();
+                    head_header.put("Cookie", CommonUtil.getUserCookie(this));
+                    com.alibaba.fastjson.JSONObject headjson = new JSONObject();
+                    headjson.put("head", MyFragment.bitmapToBase64(((BitmapDrawable)MyFragment.iv_userIcon.getDrawable()).getBitmap()));
+                    Handler mHandler3 = new Handler();
+                    MyHttpUtil.put(PublicConfig.url_put_head(), head_header, headjson.toJSONString(), new MyHttpUtil.HttpCallbackListener() {
+                        @Override
+                        public void beforeFinish(HttpURLConnection connection) {
+
+                        }
+
+                        @Override
+                        public void onFinish(String response) {
+                            JSONObject json = JSON.parseObject(response);
+                            mHandler3.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (json.getBoolean("status")) {
+                                        Toast.makeText(context, "更改头像成功", Toast.LENGTH_SHORT).show();
+                                    } else
+                                        Toast.makeText(context, "更改头像失败", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                        }
+
+                        @Override
+                        public void onError(Exception e, String response) {
+
+                        }
+                    });
                 }
                 break;
             case R.id.mi_setting:
@@ -294,6 +330,7 @@ public class IndexActivity extends AppCompatActivity implements View.OnClickList
                     });
                 }
                 CommonUtil.deleteUserCookie(this);
+                CommonUtil.setUser(this, -1L);
                 Intent intent = new Intent();
                 intent.setClass(this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
