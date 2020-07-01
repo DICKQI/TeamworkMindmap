@@ -257,6 +257,14 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
         mmm.saveTree(mmId, treev_mainTreeView.getTreeModel());
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mmm.saveTree(mmId, treev_mainTreeView.getTreeModel());
+        //关闭定时任务
+        mmHandler.removeCallbacks(mTimeCounterRunnable);
+    }
+
     private boolean verifyEnable() {
         /*
         TODO

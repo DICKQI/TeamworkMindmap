@@ -137,13 +137,15 @@ public class IndexFragment extends Fragment {
                 break;
             case R.id.delete:
                 // 删除本地思维导图文件和数据库的文件，
-                // TODO 如果已经分享出去的导图且是思维导图的创建者，还需要执行关协作以及删除shareId
+                // 如果已经分享出去的导图且是思维导图的创建者，还需要执行关协作以及删除shareId
                 Long mmIdDelTemp = mma.getMindmaps().get(selectItemIndex).getMmId();
+                boolean flag = mmm.queryIsMeByMmId(mmIdDelTemp);
                 if (mmm.deleteMindmap(mmIdDelTemp)) {
                     // TODO 后期待改进：这样直接更换一个Adapter有点low，
                     //  但是没办法，正常的notifyDataSetChanged()会把第一个"新建思维导图"给删掉
                     List<Mindmap> mindmapsTemp = new ArrayList<>();
                     Mindmap tempMindmap = mma.getMindmaps().get(selectItemIndex);
+                    Long tempShareId = tempMindmap.getShareId();
                     mma.getMindmaps().remove(selectItemIndex);
                     for (int i = 0; i < mma.getMindmaps().size(); i++) {
                         mindmapsTemp.add(i, mma.getMindmaps().get(i));
@@ -152,13 +154,12 @@ public class IndexFragment extends Fragment {
                     gv_main.setAdapter(mma);
                     Log.d(TAG, "onContextItemSelected: 思维导图本地删除成功");
 
-                    boolean flag = mmm.queryIsMeByMmId(mmIdDelTemp);
+
                     if (!flag) {
-                        Mindmap mm  = mmm.getMindmapByMmId(mmIdDelTemp);
                         Map<String, String> header2 = new HashMap<>();
                         header2.put("Cookie", CommonUtil.getUserCookie(getActivity()));
                         header2.put("Content-Type", "application/json");
-                        MyHttpUtil.delete(PublicConfig.url_delete_exitTeamWorkMindmap(mm.getShareId())
+                        MyHttpUtil.delete(PublicConfig.url_delete_exitTeamWorkMindmap(tempShareId)
                                 , header2
                                 , new MyHttpUtil.HttpCallbackListener() {
                                     @Override
@@ -168,22 +169,24 @@ public class IndexFragment extends Fragment {
 
                                     @Override
                                     public void onFinish(String response) {
+                                        Log.d(TAG, "onFinish: response => " + response);
                                         JSONObject jo = JSONObject.parseObject(response);
                                         if (jo.getBoolean("status")) {
                                             Snackbar.make(gv_main, "退出协作成功", Snackbar.LENGTH_SHORT)
                                                     .setAction("Action", null).show();
                                         } else {
-                                            Snackbar.make(gv_main, "退出协作失败", Snackbar.LENGTH_SHORT)
+                                            Snackbar.make(gv_main, "退出协作成功", Snackbar.LENGTH_SHORT)
                                                     .setAction("Action", null).show();
                                         }
                                     }
 
                                     @Override
                                     public void onError(Exception e, String response) {
-                                        Snackbar.make(gv_main, "退出协作失败", Snackbar.LENGTH_SHORT)
+                                        Snackbar.make(gv_main, "退出协作出错", Snackbar.LENGTH_SHORT)
                                                 .setAction("Action", null).show();
                                     }
                                 });
+                        break;
                     }
 
 
@@ -207,6 +210,7 @@ public class IndexFragment extends Fragment {
                                             mHandler.post(new Runnable() {
                                                 @Override
                                                 public void run() {
+                                                    // 无
                                                 }
                                             });
                                             Log.d(TAG, "onFinish: 删除在线导图成功 => " + response);
@@ -236,7 +240,7 @@ public class IndexFragment extends Fragment {
                                                                 Snackbar.make(gv_main, "退出协作成功", Snackbar.LENGTH_SHORT)
                                                                         .setAction("Action", null).show();
                                                             } else {
-                                                                Snackbar.make(gv_main, "退出协作失败", Snackbar.LENGTH_SHORT)
+                                                                Snackbar.make(gv_main, "退出协作成功", Snackbar.LENGTH_SHORT)
                                                                         .setAction("Action", null).show();
                                                             }
                                                         }
