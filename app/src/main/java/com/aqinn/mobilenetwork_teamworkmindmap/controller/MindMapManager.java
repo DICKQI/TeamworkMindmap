@@ -159,6 +159,7 @@ public class MindMapManager {
      * @return
      */
     public TreeModel<String> json2tm(String json) {
+        Log.d(TAG, "json2tm: json => " + json);
         JSONObject jo = JSONObject.parseObject(json);
         Long shareId = jo.getLong("shareId");
         JSONArray ja = jo.getJSONArray("node");
@@ -166,7 +167,7 @@ public class MindMapManager {
         for (int i = 0; i < ja.size(); i++) {
             JSONObject tempJo = (JSONObject) ja.get(i);
             NodeModel<String> nm = new NodeModel<>(tempJo.getString("content"));
-            nm.setMnId(tempJo.getLong("nodeId"));
+            nm.setnId(tempJo.getLong("nodeId"));
             nm.setpId(tempJo.getLong("parent_node"));
             nmsl.add(nm);
         }
@@ -177,7 +178,7 @@ public class MindMapManager {
             for (int j = 0; j < nmsl.size(); j++) {
                 if (nmsl.get(i) == nmsl.get(j))
                     continue;
-                if (nmsl.get(i).getMnId().equals(nmsl.get(j).getpId())) {
+                if (nmsl.get(i).getnId().equals(nmsl.get(j).getpId())) {
                     nmsl.get(i).getChildNodes().add(nmsl.get(j));
                     nmsl.get(j).setParentNode(nmsl.get(i));
                 }
@@ -233,11 +234,14 @@ public class MindMapManager {
      * @param name
      * @return
      */
-    public Mindmap createMindmap(Long userId, Long ownerId, String name, boolean isMe) {
+    public Mindmap createMindmap(Long userId, Long ownerId, String name, boolean isMe, Long shareId) {
         Mindmap mm = new Mindmap(name);
         mm.setPwd("");
-        mm.setShareId(-1L);
+        mm.setShareId(shareId);
         mm.setShareOn(0);
+        if (!isMe) {
+            mm.setShareOn(1);
+        }
         mm.setMmId(System.currentTimeMillis());
         mm.setOwnerId(ownerId);
         final NodeModel<String> teamwork_mindmap = new NodeModel<>(name);
@@ -254,6 +258,18 @@ public class MindMapManager {
             return null;
         Log.d(TAG, "思维导图创建成功");
         return mm;
+    }
+
+    /**
+     * 变更思维导图的密码
+     * @param mmId
+     * @param pwd
+     * @return
+     */
+    public int changePwd(Long mmId, String pwd) {
+        Mindmap mm = getMindmapByMmId(mmId);
+        mm.setPwd(pwd);
+        return DBUtil.updateMindmap(mm, 0, 0, 0, 1);
     }
 
     /**
@@ -330,10 +346,11 @@ public class MindMapManager {
      * @param shareId
      * @return
      */
-    public int mindmapFirstShareOn(Long mmId, Long shareId) {
+    public int mindmapFirstShareOn(Long mmId, Long shareId, String pwd) {
         Mindmap mm = getMindmapByMmId(mmId);
         mm.setShareOn(1);
         mm.setShareId(shareId);
+        mm.setPwd(pwd);
         return DBUtil.updateMindmap(mm, 0, 1, 1, 1);
     }
 
@@ -342,9 +359,10 @@ public class MindMapManager {
      * @param mmId
      * @return
      */
-    public int mindmapShareOn(Long mmId) {
+    public int mindmapShareOn(Long mmId, String pwd) {
         Mindmap mm = getMindmapByMmId(mmId);
         mm.setShareOn(1);
+        mm.setPwd(pwd);
         return DBUtil.updateMindmap(mm, 0, 0, 1, 1);
     }
 

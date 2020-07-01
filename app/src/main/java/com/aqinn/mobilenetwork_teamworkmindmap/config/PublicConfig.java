@@ -27,6 +27,16 @@ public class PublicConfig {
     }
 
     /**
+     * 退出导图协作
+     *
+     * @param shareId
+     * @return
+     */
+    public static final String url_delete_exitTeamWorkMindmap(final Long shareId) {
+        return "http://49.234.71.210/map/join/" + shareId + "/";
+    }
+
+    /**
      * 加入导图协作
      *
      * @param shareId

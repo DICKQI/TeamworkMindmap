@@ -190,25 +190,36 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                                 if (status) {
                                     Log.d(TAG, "run: 第次轮询成功");
                                     TreeModel<String> tm = mmm.json2tm(response);
-                                    List<NodeModel<String>> nmsl = tm.getNodeChildNodes(tm.getRootNode());
-                                    nmsl.add(tm.getRootNode());
-                                    nmroot = new NodeModel("根节点出错");
-                                    for (int i = 0; i < nmsl.size(); i++) {
-                                        if (nmsl.get(i).pId == 0L)
-                                            nmroot = nmsl.get(i);
-                                        for (int j = 0; j < nmsl.size(); j++) {
-                                            if (nmsl.get(i) == nmsl.get(j))
-                                                continue;
-                                            if (nmsl.get(i).getMnId().equals(nmsl.get(j).getpId())) {
-                                                nmsl.get(i).getChildNodes().add(nmsl.get(j));
-                                                nmsl.get(j).setParentNode(nmsl.get(i));
-                                            }
-                                        }
-                                    }
+                                    System.out.println(tm.getRootNode().nId);
+                                    System.out.println(tm.getRootNode().pId);
+                                    System.out.println(tm.getRootNode().value);
+//                                    List<NodeModel<String>> nmsl = tm.getNodeChildNodes(tm.getRootNode());
+//                                    nmsl.add(tm.getRootNode());
+//                                    nmroot = new NodeModel("根节点出错");
+//                                    for (int i = 0; i < nmsl.size(); i++) {
+//                                        if (nmsl.get(i).pId == 0L)
+//                                            nmroot = nmsl.get(i);
+//                                        for (int j = 0; j < nmsl.size(); j++) {
+//                                            if (nmsl.get(i) == nmsl.get(j))
+//                                                continue;
+//                                            if (nmsl.get(i).getMnId().equals(nmsl.get(j).getpId())) {
+//                                                nmsl.get(i).getChildNodes().add(nmsl.get(j));
+//                                                nmsl.get(j).setParentNode(nmsl.get(i));
+//                                            }
+//                                        }
+//                                    }
                                     mHandler.post(new Runnable() {
                                         @Override
                                         public void run() {
-                                            treev_mainTreeView.getTreeModel().setRootNode(nmroot);
+                                            Long currentNId = treev_mainTreeView.getCurrentFocusNode().nId;
+                                            treev_mainTreeView.setTreeModel(tm);
+                                            for (NodeModel<String> nm : tm.getNodeChildNodes(tm.getRootNode())) {
+                                                if (nm.getnId().equals(currentNId)) {
+                                                    treev_mainTreeView.setCurrentSelectedNode(nm);
+                                                    break;
+                                                }
+                                            }
+//                                            treev_mainTreeView.getTreeModel().setRootNode(nmroot);
                                         }
                                     });
                                 } else {
@@ -219,8 +230,6 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                                 String name = jo.getString("name");
                                 String auth = jo.getString("auth");
                                 Log.d(TAG, "onFinish: " + response);
-                                TreeModel<String> tm = mmm.json2tm(response);
-                                Log.d(TAG, "onFinish: " + tm.getNodeChildNodes(tm.getRootNode()));
                             }
 
                             @Override
@@ -394,7 +403,7 @@ public class MindmapActivity extends AppCompatActivity implements View.OnClickLi
                         Log.d(TAG, "showEdit: 根节点不能添加同级节点");
                         break;
                     }
-                    if (mm.getShareOn() == 0) {
+                    if (!http_shareOn) {
                         Long nIdTemp = mmm.getNewNodeId(mmId);
                         treev_mainTreeView.addNode(nIdTemp, mnContent);
                     } else {

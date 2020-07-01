@@ -141,7 +141,8 @@ public class FindMindmapDialogFragment extends DialogFragment implements View.On
                                                         mHandler.post(new Runnable() {
                                                             @Override
                                                             public void run() {
-                                                                Mindmap mm = mmm.createMindmap(CommonUtil.getUser(getActivity()),createUserId, mapName, false);
+                                                                Mindmap mm = mmm.createMindmap(CommonUtil.getUser(getActivity()),createUserId, mapName, false, Long.valueOf(et_share_id.getText().toString()));
+                                                                mmm.changePwd(mm.getMmId(), et_pwd.getText().toString());
                                                                 mm.setTm(tm);
                                                                 if (mmm.saveMindmap(mm)) {
                                                                     Log.d(TAG, "onFinish: 加上协作成功, 获取协作导图信息成功, 保存导图信息成功");

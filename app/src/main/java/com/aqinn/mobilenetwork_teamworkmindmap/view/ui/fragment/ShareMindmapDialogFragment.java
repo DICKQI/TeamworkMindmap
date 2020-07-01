@@ -62,6 +62,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
     private Handler mHandler = new Handler();
     private Long mmId;
     private String name;
+    private String pwd = "";
     private boolean shareOrNot;
     private Long shareId;
     private Drawable share_cancel, share_mm_blue;
@@ -72,6 +73,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
         this.name = mm.getName();
         this.shareOrNot = mm.getShareOn() == 0 ? false : true;
         this.shareId = mm.getShareId();
+        this.pwd = mmm.getMindmapByMmId(mmId).getPwd();
     }
 
     @Override
@@ -96,13 +98,21 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
         WindowManager.LayoutParams params = win.getAttributes();
         params.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
         win.setAttributes(params);
+
+        et_pwd.setText(this.pwd);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.iv_share_or_not:
-                // TODO 检查网络是否通畅 然后 break
+                // 检查是否是自己的思维导图
+                boolean flag = mmm.queryIsMeByMmId(mmId);
+                if (!flag) {
+
+                    break;
+                }
+
                 // 在此开/关协助 即 共享思维导图 上传到云端
                 if (shareOrNot) {
                     Map<String, String> header = new HashMap<>();
@@ -129,8 +139,12 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                         et_share_id.setText("");
                                     }
                                 });
+                                Snackbar.make(getView(), "关闭共享成功", Snackbar.LENGTH_SHORT)
+                                        .setAction("Action", null).show();
                                 Log.d(TAG, "onFinish: 关闭导图成功 => " + response);
                             } else {
+                                Snackbar.make(getView(), "关闭共享失败", Snackbar.LENGTH_SHORT)
+                                        .setAction("Action", null).show();
                                 Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
                                 Log.d(TAG, "onFinish: 关闭协作失败 response => " + response);
                             }
@@ -140,6 +154,8 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                         public void onError(Exception e, String response) {
                             e.printStackTrace();
                             Log.d(TAG, "onFinish: 关闭协作失败 response => " + response);
+                            Snackbar.make(getView(), "关闭共享失败", Snackbar.LENGTH_SHORT)
+                                    .setAction("Action", null).show();
                         }
                     });
                 } else {
@@ -180,7 +196,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        if (mmm.mindmapFirstShareOn(mmId, shareId) >= 1) {
+                                        if (mmm.mindmapFirstShareOn(mmId, shareId, et_pwd.getText().toString()) >= 1) {
                                             shareOrNot = true;
                                             iv_share_or_not.setImageDrawable(share_cancel);
                                             et_share_id.setText(String.valueOf(shareId));
@@ -188,6 +204,8 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                         } else {
                                             Log.d(TAG, "第一次分享思维导图网络请求完成，本地数据库存储未完成");
                                         }
+                                        Snackbar.make(getView(), "开启共享成功", Snackbar.LENGTH_SHORT)
+                                                .setAction("Action", null).show();
                                     }
                                 });
 
@@ -235,7 +253,7 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        if (mmm.mindmapShareOn(mmId) >= 1) {
+                                        if (mmm.mindmapShareOn(mmId, et_pwd.getText().toString()) >= 1) {
                                             shareOrNot = true;
                                             iv_share_or_not.setImageDrawable(share_cancel);
                                             et_share_id.setText(String.valueOf(shareId));
@@ -243,6 +261,8 @@ public class ShareMindmapDialogFragment extends DialogFragment implements View.O
                                         } else {
                                             Log.d(TAG, "非第一次分享思维导图网络请求完成，本地数据库存储未完成");
                                         }
+                                        Snackbar.make(getView(), "开启共享成功", Snackbar.LENGTH_SHORT)
+                                                .setAction("Action", null).show();
                                     }
                                 });
 

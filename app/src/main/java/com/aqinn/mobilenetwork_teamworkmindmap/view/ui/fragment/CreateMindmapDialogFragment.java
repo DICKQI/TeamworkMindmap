@@ -90,7 +90,7 @@ public class CreateMindmapDialogFragment extends DialogFragment implements View.
             case R.id.bt_confirm:
                 Long userId = CommonUtil.getUser(getActivity());
                 CommonUtil.verifyStoragePermissions(getActivity());
-                Mindmap mm = mmm.createMindmap(userId, userId, et_name.getText().toString(), true);
+                Mindmap mm = mmm.createMindmap(userId, userId, et_name.getText().toString(), true, -1L);
                 if (mm == null) {
                     Snackbar.make(getView(), "创建失败", Snackbar.LENGTH_SHORT)
                             .setAction("Action", null).show();

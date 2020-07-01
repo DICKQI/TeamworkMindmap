@@ -10,8 +10,6 @@ public class NodeModel<T> implements Serializable {
 
     public Long pId;
 
-    public Long mnId;
-
     public Long nId;
 
     /**
@@ -97,13 +95,6 @@ public class NodeModel<T> implements Serializable {
         this.hidden = hidden;
     }
 
-    public Long getMnId() {
-        return mnId;
-    }
-
-    public void setMnId(Long mnId) {
-        this.mnId = mnId;
-    }
 
     public Long getpId() {
         return pId;

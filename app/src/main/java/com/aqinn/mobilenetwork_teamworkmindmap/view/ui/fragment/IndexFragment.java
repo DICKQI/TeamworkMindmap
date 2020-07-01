@@ -151,6 +151,42 @@ public class IndexFragment extends Fragment {
                     mma = new MindmapAdapter(getActivity(), mindmapsTemp);
                     gv_main.setAdapter(mma);
                     Log.d(TAG, "onContextItemSelected: 思维导图本地删除成功");
+
+                    boolean flag = mmm.queryIsMeByMmId(mmIdDelTemp);
+                    if (!flag) {
+                        Mindmap mm  = mmm.getMindmapByMmId(mmIdDelTemp);
+                        Map<String, String> header2 = new HashMap<>();
+                        header2.put("Cookie", CommonUtil.getUserCookie(getActivity()));
+                        header2.put("Content-Type", "application/json");
+                        MyHttpUtil.delete(PublicConfig.url_delete_exitTeamWorkMindmap(mm.getShareId())
+                                , header2
+                                , new MyHttpUtil.HttpCallbackListener() {
+                                    @Override
+                                    public void beforeFinish(HttpURLConnection connection) {
+
+                                    }
+
+                                    @Override
+                                    public void onFinish(String response) {
+                                        JSONObject jo = JSONObject.parseObject(response);
+                                        if (jo.getBoolean("status")) {
+                                            Snackbar.make(gv_main, "退出协作成功", Snackbar.LENGTH_SHORT)
+                                                    .setAction("Action", null).show();
+                                        } else {
+                                            Snackbar.make(gv_main, "退出协作失败", Snackbar.LENGTH_SHORT)
+                                                    .setAction("Action", null).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e, String response) {
+                                        Snackbar.make(gv_main, "退出协作失败", Snackbar.LENGTH_SHORT)
+                                                .setAction("Action", null).show();
+                                    }
+                                });
+                    }
+
+
                     if (tempMindmap.getShareId() != 0L
                             || tempMindmap.getShareId() != -1L) {
                         Map<String, String> header = new HashMap<>();
@@ -174,11 +210,43 @@ public class IndexFragment extends Fragment {
                                                 }
                                             });
                                             Log.d(TAG, "onFinish: 删除在线导图成功 => " + response);
+                                            Snackbar.make(gv_main, "导图删除成功", Snackbar.LENGTH_SHORT)
+                                                    .setAction("Action", null).show();
                                         } else {
                                             Log.d(TAG, "onFinish: errMsg => " + jo.getString("errMsg"));
                                             Log.d(TAG, "onFinish: 删除导图失败 => " + response);
-                                            Snackbar.make(gv_main, "本地导图删除成功,云端导图删除失败", Snackbar.LENGTH_SHORT)
+                                            Snackbar.make(gv_main, "本地导图删除成功,云端导图未删除", Snackbar.LENGTH_SHORT)
                                                     .setAction("Action", null).show();
+                                            Mindmap mm  = mmm.getMindmapByMmId(mmIdDelTemp);
+                                            Map<String, String> header2 = new HashMap<>();
+                                            header.put("Cookie", CommonUtil.getUserCookie(getActivity()));
+                                            header.put("Content-Type", "application/json");
+                                            MyHttpUtil.delete(PublicConfig.url_delete_exitTeamWorkMindmap(mm.getShareId())
+                                                    , header2
+                                                    , new MyHttpUtil.HttpCallbackListener() {
+                                                        @Override
+                                                        public void beforeFinish(HttpURLConnection connection) {
+
+                                                        }
+
+                                                        @Override
+                                                        public void onFinish(String response) {
+                                                            JSONObject jo = JSONObject.parseObject(response);
+                                                            if (jo.getBoolean("status")) {
+                                                                Snackbar.make(gv_main, "退出协作成功", Snackbar.LENGTH_SHORT)
+                                                                        .setAction("Action", null).show();
+                                                            } else {
+                                                                Snackbar.make(gv_main, "退出协作失败", Snackbar.LENGTH_SHORT)
+                                                                        .setAction("Action", null).show();
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onError(Exception e, String response) {
+                                                            Snackbar.make(gv_main, "退出协作失败", Snackbar.LENGTH_SHORT)
+                                                                    .setAction("Action", null).show();
+                                                        }
+                                                    });
                                         }
                                     }
 
